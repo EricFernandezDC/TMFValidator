@@ -11,7 +11,7 @@ def setupLogging(logFile = "validator.log"):
     # Create file handler which logs even debug messages
     fh = logging.FileHandler(logFile)
     fh.setLevel(logging.DEBUG)
-    # Create console handler with a higher log leve
+    # Create console handler with a higher log level
     ch = logging.StreamHandler()
     #ch.setLevel(logging.ERROR)
     ch.setLevel(logging.INFO)
