@@ -4,24 +4,33 @@ import os
 import urllib.request
 import argparse
 
-# Parse command line 
-parser = argparse.ArgumentParser(description='TMF Validator application')
-# Required argument fileName
-parser.add_argument('fileName', metavar='fileName', type=str, nargs=1,
+def parseCommandLine():
+    # Parse command line 
+    parser = argparse.ArgumentParser(description='TMF Validator application')
+    # Required argument fileName
+    parser.add_argument('fileName', metavar='fileName', type=str, nargs=1,
                     help='swagger file to be processed')
-# Additional argument for debug purposes
-parser.add_argument('-d', '--debug', dest='debug', action='store_const',
+    # Additional argument for debug purposes
+    parser.add_argument('-d', '--debug', dest='debug', action='store_const',
                     const=1, default=0,
                     help='triggers debug mode')
-# Get arguments as args, access through args.fileName and args.debug
-args = parser.parse_args()
-#print(args.fileName, args.debug)
+    # Get arguments as args, access through args.fileName and args.debug
+    args = parser.parse_args()
+    # args.fileName seems to be a (possible) list of names 
+    # print(args.fileName, args.debug)
+    return args
 
 # Set logging output file, stream, format and level
-def setupLogging(logFile = "validator.log"):
+def setupLogging(logFile = "validator.log", debug = 0):
     # Set up logger
     log = logging.getLogger("API Validator")
-    log.setLevel(logging.DEBUG)
+    if (debug == 1):
+        # Turn on all debug output
+        log.setLevel(logging.DEBUG)
+    else:
+        # Just leave the errors on (doesn't seem to be a .WARN)
+        log.setLevel(logging.ERROR)
+
     # Create file handler which logs even debug messages
     fh = logging.FileHandler(logFile)
     fh.setLevel(logging.DEBUG)
@@ -37,7 +46,6 @@ def setupLogging(logFile = "validator.log"):
     log.addHandler(fh)
     log.addHandler(ch)
     return log
-
 
 def loadSwagger(filename):
     obj = {}
@@ -62,15 +70,16 @@ def loadSwagger(filename):
         with open(filename, 'r') as fp:
             obj = json.load(fp)
     except ValueError:
-        log.critical("Error loading and parsing file")
+        log.critical("Error loading and parsing file [" +filename+"]")
         exit()
 
     return obj
 
+args = parseCommandLine()
+log = setupLogging("validator.log", args.debug)
 
-log = setupLogging()
-obj = loadSwagger("tmf_api_servicecatalog_swagger_v1_2.json")
-#obj = loadSwagger("Resource_Inventory_Management.regular.swagger.json")
+# args.fileName seems to be a (possible) list of names
+obj = loadSwagger(args.fileName[0])
 
 log.debug("Using Swagger file format " +obj["swagger"])
 info = obj["info"]
