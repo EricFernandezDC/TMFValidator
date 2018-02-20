@@ -2,6 +2,20 @@ import logging
 import json
 import os
 import urllib.request
+import argparse
+
+# Parse command line 
+parser = argparse.ArgumentParser(description='TMF Validator application')
+# Required argument fileName
+parser.add_argument('fileName', metavar='fileName', type=str, nargs=1,
+                    help='swagger file to be processed')
+# Additional argument for debug purposes
+parser.add_argument('-d', '--debug', dest='debug', action='store_const',
+                    const=1, default=0,
+                    help='triggers debug mode')
+# Get arguments as args, access through args.fileName and args.debug
+args = parser.parse_args()
+#print(args.fileName, args.debug)
 
 # Set logging output file, stream, format and level
 def setupLogging(logFile = "validator.log"):
