@@ -7,35 +7,46 @@ import argparse
 # Parse command line 
 parser = argparse.ArgumentParser(description='TMF Validator application')
 # Required argument fileName
-parser.add_argument('fileName', metavar='fileName', type=str, nargs=1,
+parser.add_argument('fileName', metavar='fileName', nargs=1,
                     help='swagger file to be processed')
 # Additional argument for debug purposes
 parser.add_argument('-d', '--debug', dest='debug', action='store_const',
                     const=1, default=0,
-                    help='triggers debug mode')
+                    help='triggers debug log mode')
+# Additional argument for debug levels
+parser.add_argument('-e', '--error', dest='error', action='store_const',
+                    const=1, default=0,
+                    help='triggers error debug log mode')
 # Get arguments as args, access through args.fileName and args.debug
 args = parser.parse_args()
 #print(args.fileName, args.debug)
+fileName = ''.join(args.fileName)
+logFile = "validator.log"
 
 # Set logging output file, stream, format and level
-def setupLogging(logFile = "validator.log"):
+def setupLogging(logFile):
     # Set up logger
     log = logging.getLogger("API Validator")
     log.setLevel(logging.DEBUG)
-    # Create file handler which logs even debug messages
-    fh = logging.FileHandler(logFile)
-    fh.setLevel(logging.DEBUG)
     # Create console handler with a higher log level
     ch = logging.StreamHandler()
     #ch.setLevel(logging.ERROR)
     ch.setLevel(logging.INFO)
     #formatter = logging.Formatter('%(asctime)s: %(name)s: %(levelname)s: %(message)s')
     formatter = logging.Formatter('%(name)s: %(levelname)s: %(message)s')
-    fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # add the handlers to the logger
-    log.addHandler(fh)
     log.addHandler(ch)
+
+    # Create file handler which logs even debug messages
+    if(args.debug == 1):
+        fh = logging.FileHandler(logFile)
+        fh.setLevel(logging.DEBUG)
+        if(args.error == 1):
+            fh.setLevel(logging.ERROR)
+        fh.setFormatter(formatter)
+        log.addHandler(fh)
+    
     return log
 
 
@@ -68,8 +79,9 @@ def loadSwagger(filename):
     return obj
 
 
-log = setupLogging()
-obj = loadSwagger("tmf_api_servicecatalog_swagger_v1_2.json")
+log = setupLogging(logFile)
+obj = loadSwagger(fileName)
+#obj = loadSwagger("tmf_api_servicecatalog_swagger_v1_2.json")
 #obj = loadSwagger("Resource_Inventory_Management.regular.swagger.json")
 
 log.debug("Using Swagger file format " +obj["swagger"])
