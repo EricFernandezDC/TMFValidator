@@ -4,30 +4,36 @@ import os
 import urllib.request
 import argparse
 
-# Parse command line 
-parser = argparse.ArgumentParser(description='TMF Validator application')
-# Required argument fileName
-parser.add_argument('fileName', metavar='fileName', nargs=1,
+def parseCommandLine():
+    # Parse command line 
+    parser = argparse.ArgumentParser(description='TMF Validator application')
+    # Required argument fileName
+    parser.add_argument('fileName', metavar='fileName', nargs=1,
                     help='swagger file to be processed')
-# Additional argument for debug purposes
-parser.add_argument('-d', '--debug', dest='debug', action='store_const',
+    # Additional argument for debug purposes
+    parser.add_argument('-d', '--debug', dest='debug', action='store_const',
+                    const=1, default=0,
+                    help='triggers debug mode')
+    # Additional argument for debug levels
+    parser.add_argument('-l', '--log', dest='log', action='store_const',
                     const=1, default=0,
                     help='triggers debug log mode')
-# Additional argument for debug levels
-parser.add_argument('-e', '--error', dest='error', action='store_const',
-                    const=1, default=0,
-                    help='triggers error debug log mode')
-# Get arguments as args, access through args.fileName and args.debug
-args = parser.parse_args()
-#print(args.fileName, args.debug)
-fileName = ''.join(args.fileName)
-logFile = "validator.log"
+    # Get arguments as args, access through args.fileName and args.debug
+    args = parser.parse_args()
+    # args.fileName seems to be a (possible) list of names
+    #print(args.fileName, args.debug)
+    return args
 
 # Set logging output file, stream, format and level
-def setupLogging(logFile):
+def setupLogging(debug,log):
     # Set up logger
     log = logging.getLogger("API Validator")
-    log.setLevel(logging.DEBUG)
+    if (debug == 1):
+        # Turn on all debug output
+        log.setLevel(logging.DEBUG)
+    else:
+        # Just leave the errors on (doesn't seem to be a .WARN)
+        log.setLevel(logging.ERROR)
     # Create console handler with a higher log level
     ch = logging.StreamHandler()
     #ch.setLevel(logging.ERROR)
@@ -39,16 +45,14 @@ def setupLogging(logFile):
     log.addHandler(ch)
 
     # Create file handler which logs even debug messages
-    if(args.debug == 1):
+    if(args.log == 1):
+        logFile="validator.log"
         fh = logging.FileHandler(logFile)
         fh.setLevel(logging.DEBUG)
-        if(args.error == 1):
-            fh.setLevel(logging.ERROR)
         fh.setFormatter(formatter)
         log.addHandler(fh)
     
     return log
-
 
 def loadSwagger(filename):
     obj = {}
@@ -73,16 +77,16 @@ def loadSwagger(filename):
         with open(filename, 'r') as fp:
             obj = json.load(fp)
     except ValueError:
-        log.critical("Error loading and parsing file")
+        log.critical("Error loading and parsing file [" +filename+"]")
         exit()
 
     return obj
 
+args = parseCommandLine()
+log = setupLogging(args.debug,args.log)
 
-log = setupLogging(logFile)
-obj = loadSwagger(fileName)
-#obj = loadSwagger("tmf_api_servicecatalog_swagger_v1_2.json")
-#obj = loadSwagger("Resource_Inventory_Management.regular.swagger.json")
+# args.fileName seems to be a (possible) list of names
+obj = loadSwagger(args.fileName[0])
 
 log.debug("Using Swagger file format " +obj["swagger"])
 info = obj["info"]
