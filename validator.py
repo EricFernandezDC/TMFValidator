@@ -61,28 +61,29 @@ def setupLogging(debug,log):
 def loadSwagger(filename):
     obj = {}
     # From a URL
-    # url = urllib.request.urlopen('http://site.com/sample.json')
-    # obj = json.load(url)
-
+    if "http" in filename:
+        req = urllib.request.urlopen(filename)
+        obj = json.loads(req.read().decode())
+    else: 
     # From a file
-    log.info("API Specification is " +filename)
-    if (os.path.exists(filename)):
-        #log.debug("File [" +filename+ "] exists")
-        if (os.access(filename, os.R_OK)):
-            log.debug("File [" +filename+ "] exists and is readable")
+        log.info("API Specification is " +filename)
+        if (os.path.exists(filename)):
+            #log.debug("File [" +filename+ "] exists")
+            if (os.access(filename, os.R_OK)):
+                log.debug("File [" +filename+ "] exists and is readable")
+            else:
+                log.critical("File [" +filename+ "] is not readable")
+                exit()
         else:
-            log.critical("File [" +filename+ "] is not readable")
+            log.critcal("File [" +filename+ "] does not exist")
             exit()
-    else:
-        log.critcal("File [" +filename+ "] does not exist")
-        exit()
 
-    try:
-        with open(filename, 'r') as fp:
-            obj = json.load(fp)
-    except ValueError:
-        log.critical("Error loading and parsing file [" +filename+"]")
-        exit()
+        try:
+            with open(filename, 'r') as fp:
+                obj = json.load(fp)
+        except ValueError:
+            log.critical("Error loading and parsing file [" +filename+"]")
+            exit()
 
     return obj
 
