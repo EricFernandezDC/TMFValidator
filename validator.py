@@ -14,10 +14,14 @@ def parseCommandLine():
     parser.add_argument('-d', '--debug', dest='debug', action='store_const',
                     const=1, default=0,
                     help='triggers debug mode')
-    # Additional argument for debug levels
+    # Additional argument for debug logs
     parser.add_argument('-l', '--log', dest='log', action='store_const',
                     const=1, default=0,
                     help='triggers debug log mode')
+    # Additional argument for debug logs
+    parser.add_argument('-c', '--ctk', dest='ctk', action='store_const',
+                        const=1, default=0,
+                        help='triggers ctk')
     # Get arguments as args, access through args.fileName and args.debug
     args = parser.parse_args()
     # args.fileName seems to be a (possible) list of names
@@ -33,7 +37,7 @@ def setupLogging(debug,log):
         log.setLevel(logging.DEBUG)
     else:
         # Just leave the errors on (doesn't seem to be a .WARN)
-        log.setLevel(logging.ERROR)
+        log.setLevel(logging.INFO)
     # Create console handler with a higher log level
     ch = logging.StreamHandler()
     #ch.setLevel(logging.ERROR)
@@ -135,16 +139,16 @@ for path in paths:
         uri = "http://" +hostname +basePath +path
         operationDetails = method[operation]
         params = operationDetails["parameters"]
-
-        for param in params:
-            if "required" in param:
-                if (param["required"] == True):
-                    if "type" in param:
-                        primaryKey = uri.replace("{id}", "{id: " +param["type"]+ "}")
-                        log.info("\n  # Mandatory test: " +param["description"]+ "\n  curl -" +operation+ " " +primaryKey)
-                else:
-                    # Optional param - test if it is a query param
-                    if "in" in param:
-                        if (param["in"] == "query"):
-                            if "description" in param:
-                                log.info("\n  # Optional test: " +param["description"]+ "\n  curl -" +operation+ " " +uri+ "?" +param["name"]+ "=" +param["type"])
+        if args.ctk==1:
+            for param in params:
+                if "required" in param:
+                    if (param["required"] == True):
+                        if "type" in param:
+                            primaryKey = uri.replace("{id}", "{id: " +param["type"]+ "}")
+                            log.info("\n  # Mandatory test: " +param["description"]+ "\n  curl -" +operation+ " " +primaryKey)
+                    else:
+                        # Optional param - test if it is a query param
+                        if "in" in param:
+                            if (param["in"] == "query"):
+                                if "description" in param:
+                                    log.info("\n  # Optional test: " +param["description"]+ "\n  curl -" +operation+ " " +uri+ "?" +param["name"]+ "=" +param["type"])
