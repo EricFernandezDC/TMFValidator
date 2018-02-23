@@ -3,6 +3,7 @@ import json
 import os
 import urllib.request
 import argparse
+import time
 
 def parseCommandLine():
     # Parse command line 
@@ -18,10 +19,14 @@ def parseCommandLine():
     parser.add_argument('-l', '--log', dest='log', action='store_const',
                     const=1, default=0,
                     help='triggers debug log mode')
-    # Additional argument for debug logs
+    # Additional argument for ctk output
     parser.add_argument('-c', '--ctk', dest='ctk', action='store_const',
                         const=1, default=0,
                         help='triggers ctk')
+    # Additional argument for summary log
+    parser.add_argument('-s', '--summary', dest='sumlog', action='store_const',
+                        const=1, default=0,
+                        help='outputs summary log')
     # Get arguments as args, access through args.fileName and args.debug
     args = parser.parse_args()
     # args.fileName seems to be a (possible) list of names
@@ -89,9 +94,9 @@ def loadSwagger(filename):
 
 args = parseCommandLine()
 log = setupLogging(args.debug,args.log)
-
 # args.fileName seems to be a (possible) list of names
 obj = loadSwagger(args.fileName[0])
+summary = {"File Name":args.fileName[0]}
 
 log.debug("Using Swagger file format " +obj["swagger"])
 info = obj["info"]
@@ -99,21 +104,28 @@ log.debug("Found info node " +json.dumps(info))
 
 if (info["title"]):
     log.info("Found info.title: " +info["title"])
+    summary["Title"] = "PASS"
 else:
     log.error("info node has no title")
+    summary["Title"] = "WARN"
 
 if (info["description"]):
     log.info("Found info.description: " +info["description"])
+    summary["Description"] = "PASS"
 else:
     log.error("info node has no description")
+    summary["Description"] = "WARN"
 
 if (info["version"]):
     if (info["version"] == "2.0"):
         log.warn("info.version is 2.0 - is this the Swagger file format version or the API specification version?")
+        summary["API Version"] = "WARN"
     else:
         log.info("Found info.version: " +info["version"])
+        summary["API Version"] = "PASS"
 else:
     log.info("info node has no version")
+    summary["API Version"] = "WARN"
 
 # "host": "biologeek.orange-labs.fr",
 if (obj["host"]):
@@ -125,9 +137,11 @@ if (obj["basePath"]):
     basePath = obj["basePath"]
     if (basePath.startswith("/tmf-api/")):
         log.info("basePath correctly starts with [/tmf-api/]")
+        summary["BasePath"] = "PASS"
         # Perhaps validate that the resource name comes next?
     else:
         log.error("basePath [" +basePath+ "] does not start with [/tmf-api]")
+        summary["BasePath"] = "FAIL"
 
     if (basePath.find("/v2") != -1):
         log.error("basePath [" +basePath+ "] contains an explicit version number")
@@ -153,3 +167,10 @@ for path in paths:
                             if (param["in"] == "query"):
                                 if "description" in param:
                                     log.info("\n  # Optional test: " +param["description"]+ "\n  curl -" +operation+ " " +uri+ "?" +param["name"]+ "=" +param["type"])
+summary["Time"] = time.strftime("%H:%M:%S")
+summary["Date"] = time.strftime("%d/%m/%Y")
+if args.sumlog==1:
+    with open('summary.log',"a+") as f:
+        json.dump(summary,f)
+        f.write("\n")
+    f.closed
