@@ -1,7 +1,7 @@
 rem Use .\\script.bat to run script on command line
 rem Use http://www.convertcsv.com/json-to-csv.htm to convert the JSON summary file to CSV or XLS
-rem DOES NOT PARSE: changeManagement-v2-swagger2.json, paymentMethod-v3-swagger2.json, productOfferingQualification-v2-swagger2.yaml, paymentManagementTMF_v1.0.0_review9.swagger.json^
-rem DOES NOT PARSE: prepayBalanceManagement-v3-swagger2.json, promotionManagement-v3-swagger2.json, Service_Ordering_Management.regular.swagger.json, serviceCatalogManagement-v2-swagger2.json
+rem NOT A VALID FILE: changeManagement-v2-swagger2.json, productOfferingQualification-v2-swagger2.yaml, paymentManagementTMF_v1.0.0_review9.swagger.json^
+rem NOT A VALID FILE: prepayBalanceManagement-v3-swagger2.json, promotionManagement-v3-swagger2.json, Service_Ordering_Management.regular.swagger.json, serviceCatalogManagement-v2-swagger2.json
 
 
 python validator.py -s -l -d ^
@@ -11,6 +11,7 @@ python validator.py -s -l -d ^
  swagger\alarmManagement-v3-swagger2.json^
  swagger\appointmentManagement-v2-swagger2.json^
  swagger\billingManagement-v2-swagger2.json^
+ swagger\changeManagement-v2-swagger2.json^
  swagger\communicationManagement-v3-swagger2.json^
  swagger\customerBillManagement-v3-swagger2.json^
  swagger\customerManagement-v3-swagger2.json^
@@ -27,16 +28,23 @@ python validator.py -s -l -d ^
  swagger\partnershipTypeManagemnet-v3-swagger2.json^
  swagger\partyManagement-v2-swagger2.json^
  swagger\partyRoleManagement-v3-swagger2.json^
+ swagger\paymentManagementTMF_v1.0.0_review9.swagger.json^
+ swagger\paymentMethod-v3-swagger2.json^
  swagger\performanceManagementThreshold-v3-swagger2.json^
+ swagger\prepayBalanceManagement-v3-swagger2.json^
  swagger\privacyManagement-v2-swagger2.json^
  swagger\productCatalog-v2-swagger2.json^
  swagger\productInventory-v2-swagger2.json^
+ swagger\productOfferingQualification-v2-swagger2.yaml^
  swagger\productOrdering-v2-swagger2.json^
+ swagger\promotionManagement-v3-swagger2.json^
  swagger\quoteManagement-v3-swagger2.json^
  swagger\resourceCatalogManagement-v3-swagger2.json^
  swagger\resourceFunctionActivationConfiguration-v2-swagger2.json^
  swagger\resourceInventoryManagement-v3-swagger2.json^
+ swagger\serviceCatalogManagement-v2-swagger2.json^
  swagger\Service_Inventory_Management.regular.swagger.json^
+ swagger\Service_Ordering_Management.regular.swagger.json^
  swagger\Service_Qualification.regular.swagger.json^
  swagger\serviceActivationAndConfiguration-v2-swagger2.json^
  swagger\serviceQualityManagement-v2-swagger2.json^

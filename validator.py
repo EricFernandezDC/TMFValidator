@@ -94,7 +94,7 @@ def loadSwagger(filename):
                 obj = json.load(fp)
         except ValueError:
             log.critical("Error loading and parsing file [" + filename+ "]")
-            exit()
+            obj = 0
 
     return obj
 
@@ -107,88 +107,93 @@ obj_list = []
 for x in args.fileName:
     summary = collections.OrderedDict()
     obj = loadSwagger(x)
-    summary = {"File Name": x}
-    log.debug("Using Swagger file format " + obj["swagger"])
-    info = obj["info"]
-    log.debug("Found info node " + json.dumps(info))
-
-    if (info["title"]):
-        log.info("Found info.title: " + info["title"])
-        summary["Title"] = "PASS"
+    if obj==0:
+        summary["File Name"] = x
+        summary["ERROR"] = "File cannot be read, is it a valid JSON file?"
+        obj_list.append(summary)
     else:
-        log.error("info node has no title")
-        summary["Title"] = "FAIL: No Title"
-    if (info["description"]):
-        log.info("Found info.description: " + info["description"])
-        summary["Description"] = "PASS"
-    else:
-        log.error("info node has no description")
-        summary["Description"] = "FAIL: No Description"
+        summary = {"File Name": x}
+        log.debug("Using Swagger file format " + obj["swagger"])
+        info = obj["info"]
+        log.debug("Found info node " + json.dumps(info))
 
-    if (info["version"]):
-        if (info["version"] == "2.0"):
-            log.warn(
-                "info.version is 2.0 - is this the Swagger file format version or the API specification version?")
-            summary["API Version"] = "WARN: APIv2.0?"
+        if (info["title"]):
+            log.info("Found info.title: " + info["title"])
+            summary["Title"] = "PASS"
         else:
-            log.info("Found info.version: " + info["version"])
-            summary["API Version"] = "PASS"
-    else:
-        log.info("info node has no version")
-        summary["API Version"] = "WARN: No Version"
-
-    # "host": "biologeek.orange-labs.fr",
-    if (obj["host"]):
-        hostname = obj["host"]
-        log.info("Found host [" + hostname + "] What should this be set to?")
-
-    # "basePath": "/tmf-api/resourceInventoryManagement",
-    if (obj["basePath"]):
-        basePath = obj["basePath"]
-        if (basePath.startswith("/tmf-api/")):
-            log.info("basePath correctly starts with [/tmf-api/]")
-            summary["BasePath"] = "PASS"
-            # Perhaps validate that the resource name comes next?
+            log.error("info node has no title")
+            summary["Title"] = "FAIL: No Title"
+        if (info["description"]):
+            log.info("Found info.description: " + info["description"])
+            summary["Description"] = "PASS"
         else:
-            log.error("basePath [" + basePath +
-                      "] does not start with [/tmf-api/]")
-            summary["BasePath"] = "FAIL: No /tmf-api/"
+            log.error("info node has no description")
+            summary["Description"] = "FAIL: No Description"
 
-        if (basePath.find("/v2") != -1):
-            log.info("basePath [" + basePath +
-                      "] contains an explicit version number")
-    paths = obj["paths"]
-    for path in paths:
-        method = paths[path]
-        for operation in method.keys():
-            log.info("Can use a [" + operation + "] on path [" + path + "]")
-            uri = "http://" + hostname + basePath + path
-            operationDetails = method[operation]
-            if "parameters" in operationDetails:
-                params = operationDetails["parameters"]
+        if (info["version"]):
+            if (info["version"] == "2.0"):
+                log.warn(
+                    "info.version is 2.0 - is this the Swagger file format version or the API specification version?")
+                summary["API Version"] = "WARN: APIv2.0?"
             else:
-                log.info("Operation [" +operation+ "] on uri [" +uri+ "] has no parameters defined")
-                params = {}
+                log.info("Found info.version: " + info["version"])
+                summary["API Version"] = "PASS"
+        else:
+            log.info("info node has no version")
+            summary["API Version"] = "WARN: No Version"
 
-            if args.ctk == 1:
-                for param in params:
-                    if "required" in param:
-                        if (param["required"] == True):
-                            if "type" in param:
-                                primaryKey = uri.replace(
-                                    "{id}", "{id: " + param["type"] + "}")
-                                log.info(
-                                    "\n  # Mandatory test: " + param["description"] + "\n  curl -" + operation + " " + primaryKey)
-                        else:
-                            # Optional param - test if it is a query param
-                            if "in" in param:
-                                if (param["in"] == "query"):
-                                    if "description" in param:
-                                        log.info("\n  # Optional test: " + param["description"] + "\n  curl -" +
-                                                 operation + " " + uri + "?" + param["name"] + "=" + param["type"])
-    summary["Time"] = time.strftime("%H:%M:%S")
-    summary["Date"] = time.strftime("%d/%m/%Y")
-    obj_list.append(summary)
+        # "host": "biologeek.orange-labs.fr",
+        if (obj["host"]):
+            hostname = obj["host"]
+            log.info("Found host [" + hostname + "] What should this be set to?")
+
+        # "basePath": "/tmf-api/resourceInventoryManagement",
+        if (obj["basePath"]):
+            basePath = obj["basePath"]
+            if (basePath.startswith("/tmf-api/")):
+                log.info("basePath correctly starts with [/tmf-api/]")
+                summary["BasePath"] = "PASS"
+                # Perhaps validate that the resource name comes next?
+            else:
+                log.error("basePath [" + basePath +
+                        "] does not start with [/tmf-api/]")
+                summary["BasePath"] = "FAIL: No /tmf-api/"
+
+            if (basePath.find("/v2") != -1):
+                log.info("basePath [" + basePath +
+                        "] contains an explicit version number")
+        paths = obj["paths"]
+        for path in paths:
+            method = paths[path]
+            for operation in method.keys():
+                log.info("Can use a [" + operation + "] on path [" + path + "]")
+                uri = "http://" + hostname + basePath + path
+                operationDetails = method[operation]
+                if "parameters" in operationDetails:
+                    params = operationDetails["parameters"]
+                else:
+                    log.info("Operation [" +operation+ "] on uri [" +uri+ "] has no parameters defined")
+                    params = {}
+
+                if args.ctk == 1:
+                    for param in params:
+                        if "required" in param:
+                            if (param["required"] == True):
+                                if "type" in param:
+                                    primaryKey = uri.replace(
+                                        "{id}", "{id: " + param["type"] + "}")
+                                    log.info(
+                                        "\n  # Mandatory test: " + param["description"] + "\n  curl -" + operation + " " + primaryKey)
+                            else:
+                                # Optional param - test if it is a query param
+                                if "in" in param:
+                                    if (param["in"] == "query"):
+                                        if "description" in param:
+                                            log.info("\n  # Optional test: " + param["description"] + "\n  curl -" +
+                                                    operation + " " + uri + "?" + param["name"] + "=" + param["type"])
+        summary["Time"] = time.strftime("%H:%M:%S")
+        summary["Date"] = time.strftime("%d/%m/%Y")
+        obj_list.append(summary)
 
 if args.sumlog == 1:
     with open('logs/summary'+str(time.strftime("%d-%m-%Y_%H-%M-%S"))+'.json', "w+") as f:
