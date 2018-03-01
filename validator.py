@@ -162,6 +162,21 @@ for x in args.fileName:
             if (basePath.find("/v2") != -1):
                 log.info("basePath [" + basePath +
                         "] contains an explicit version number")
+
+            # DG-P1-Pg18: “REST APIs MUST support the “application/json” media type by default.”
+            if ("consumes" in obj and "produces" in obj):
+                log.info("Found [consumes] and [produces] attributes")
+                if ("application/json" in obj["consumes"] and
+                    "application/json" in obj["produces"]):
+                    log.info("DG3-1-18: Found [consumes] and [produces] attributes supporting 'application/json'")
+                    summary["DG3-1-18: JSON"] = "PASS"
+                else:
+                    log.error("DG3-1-18: [consumes] and [produces] attributes do not mention 'application/json'")
+                    summary["DG3-1-18: JSON"] = "FAIL: No JSON support"
+            else:
+                log.error("DG3-1-18: The [consumes] and/or [produces] attributes (to support 'application/json') are missing")
+                summary["DG3-1-18: JSON"] = "FAIL: Missing attributes"
+
         paths = obj["paths"]
         for path in paths:
             method = paths[path]
@@ -174,6 +189,32 @@ for x in args.fileName:
                 else:
                     log.info("Operation [" +operation+ "] on uri [" +uri+ "] has no parameters defined")
                     params = {}
+
+                # DG3-1-Pg26: “If the request is successful then the returned code must be 200.”
+                if "responses" in operationDetails:
+                    log.info("Responses found for operation [" +operation+ "] on [" +path+ "]")
+                    if (operation == "get"):
+                        if ("200" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg26: A 200 response code was listed for the HTTP-GET of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg26: A 200 response code was not listed for the HTTP-GET of [" +path+ "]")
+                            # Probably need to just set a flag inside this loop, to be picked up at the end
+                            summary["DG3-1-Pg26: Responses"] = "FAIL: GET missing 200 response"
+
+                        # DG3-1-Pg26: “If there are no matching resource then a 404 Not Found must be returned.”
+                        if ("404" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg26: A 404 response code was listed for the HTTP-GET of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg26: A 404 response code was not listed for the HTTP-GET of [" +path+ "]")
+                            # Probably need to just set a flag inside this loop, to be picked up at the end
+                            summary["DG3-1-Pg26: Responses"] = "FAIL: GET missing 404 response"
+
+                    for response in operationDetails["responses"]:
+                        log.info("Found response code [" +response+ "]")
+                else:
+                    log.error("DG3-1-Pg26: No responses attribute found for operation [" +operation+ "] for path [" +path+ "]")
+                    # Probably need to just set a flag inside this loop, to be picked up at the end
+                    summary["DG3-1-Pg26: Responses"] = "FAIL: Missing responses"
 
                 if args.ctk == 1:
                     for param in params:
@@ -191,6 +232,7 @@ for x in args.fileName:
                                         if "description" in param:
                                             log.info("\n  # Optional test: " + param["description"] + "\n  curl -" +
                                                     operation + " " + uri + "?" + param["name"] + "=" + param["type"])
+
         summary["Time"] = time.strftime("%H:%M:%S")
         summary["Date"] = time.strftime("%d/%m/%Y")
         obj_list.append(summary)
