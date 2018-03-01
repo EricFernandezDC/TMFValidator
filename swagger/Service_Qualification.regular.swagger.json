@@ -1,0 +1,946 @@
+
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "## TMF API Reference: TMF645 - Service Qualification\n\n### Release : 18.0 - January 2018\n\nService Qualification API is one of Pre-Ordering Management API Family. Service Qualification API goal is to provide service technical eligibility. \n\n### Resource \n- serviceQualification\n\n### Operations\nService Qualification API performs the following operations on the resource :\n- Retrieve an entity or a collection of entities depending on filter criteria\n- Partial update of an entity (including updating rules)\n- Create an entity (including default values and creation rules)\n- Delete an entity (for administration purposes)\n- Manage notification of events\n\nCopyright © TM Forum 2017. All Rights Reserved.",
+    "version": "3.0.0_inProgress",
+    "title": "API ServiceQualification"
+  },
+  
+  "host": "api.orange.com",
+  "basePath":	"/",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json;charset=utf-8"
+  ],
+  "produces": [
+    "application/json;charset=utf-8"
+  ],
+  "tags": [
+  
+    {
+      "name": "ServiceQualification",
+      "description": ""
+    }
+  ],
+  "paths": {
+      "/serviceQualification": {
+      "post": {
+        "tags": [
+           "ServiceQualification"
+        ],
+        "operationId": "serviceQualificationCreate",
+        "summary": "Create a service qualification",
+        "description": "This operation creates a service qualification entity.\nMandatory and non mandatory attributes, additional rules and default values are provided in the specifications document.\n\nSpecific business errors for current operation will be encapsulated in\n\nHTTP Response 422 Unprocessable entity\n",
+        "deprecated": false,
+        
+        "parameters": [
+          
+          {
+            "name": "ServiceQualification",
+            "required": true,
+            "in": "body",
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/ServiceQualification"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ServiceQualification"
+            }
+
+          },
+          "400": {
+            
+            "description": "Bad Request\n\nList of supported error codes:\n- 20: Invalid URL parameter value\n- 21: Missing body\n- 22: Invalid body\n- 23: Missing body field\n- 24: Invalid body field\n- 25: Missing header\n- 26: Invalid header value\n- 27: Missing query-string parameter\n- 28: Invalid query-string parameter value",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            
+            "description": "Not Found\n\nList of supported error codes:\n- 60: Resource not found",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "422": {
+            
+            "description": "Unprocessable entity\n\nFunctional error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            
+            "description": "Internal Server Error\n\nList of supported error codes:\n- 1: Internal error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+           "ServiceQualification"
+        ],
+        "operationId": "serviceQualificationFind",
+        "summary": "List service qualifications",
+        "description": "This operation list service qualification entities.\nAttribute selection is enabled for all first level attributes.\nFiltering may be available depending on the compliance level supported by an implementation.\n\nSpecific business errors for current operation will be encapsulated in\n\nHTTP Response 422 Unprocessable entity\n",
+        "deprecated": false,
+        
+        "parameters": [
+          
+          {
+            "name": "fields",
+            "required": false,
+            "in": "query",
+            "description": "Attributes selection",
+            
+              "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+              "$ref": "#/definitions/ServiceQualification"
+              }
+            }
+
+          },
+          "400": {
+            
+            "description": "Bad Request\n\nList of supported error codes:\n- 20: Invalid URL parameter value\n- 21: Missing body\n- 22: Invalid body\n- 23: Missing body field\n- 24: Invalid body field\n- 25: Missing header\n- 26: Invalid header value\n- 27: Missing query-string parameter\n- 28: Invalid query-string parameter value",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            
+            "description": "Not Found\n\nList of supported error codes:\n- 60: Resource not found",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "422": {
+            
+            "description": "Unprocessable entity\n\nFunctional error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            
+            "description": "Internal Server Error\n\nList of supported error codes:\n- 1: Internal error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+      "/serviceQualification/{id}": {
+      "get": {
+        "tags": [
+           "ServiceQualification"
+        ],
+        "operationId": "serviceQualificationGet",
+        "summary": "Retrieve a service qualification",
+        "description": "This operation retrieves a service qualification entity.\nAttribute selection is enabled for all first level attributes.\nFiltering on sub-resources may be available depending on the compliance level supported by an implementation.\n\nSpecific business errors for current operation will be encapsulated in\n\nHTTP Response 422 Unprocessable entity\n",
+        "deprecated": false,
+        
+        "parameters": [
+          
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "fields",
+            "required": false,
+            "in": "query",
+            "description": "Attributes selection",
+            
+              "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ServiceQualification"
+            }
+
+          },
+          "400": {
+            
+            "description": "Bad Request\n\nList of supported error codes:\n- 20: Invalid URL parameter value\n- 21: Missing body\n- 22: Invalid body\n- 23: Missing body field\n- 24: Invalid body field\n- 25: Missing header\n- 26: Invalid header value\n- 27: Missing query-string parameter\n- 28: Invalid query-string parameter value",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            
+            "description": "Not Found\n\nList of supported error codes:\n- 60: Resource not found",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "422": {
+            
+            "description": "Unprocessable entity\n\nFunctional error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            
+            "description": "Internal Server Error\n\nList of supported error codes:\n- 1: Internal error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+           "ServiceQualification"
+        ],
+        "operationId": "serviceQualificationPatch",
+        "summary": "Partially update a service qualification",
+        "description": "This operation allows partial updates of a service qualification entity. Support of json/merge (https://tools.ietf.org/html/rfc7386) is mandatory, support of json/patch (http://tools.ietf.org/html/rfc5789) is optional.\nPatchable and non patchable attributes and additional rules are provided in the specifications document.\n\nSpecific business errors for current operation will be encapsulated in\n\nHTTP Response 422 Unprocessable entity\n",
+        "deprecated": false,
+        
+        "parameters": [
+          
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "ServiceQualification",
+            "required": true,
+            "in": "body",
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/ServiceQualification"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ServiceQualification"
+            }
+
+          },
+          "400": {
+            
+            "description": "Bad Request\n\nList of supported error codes:\n- 20: Invalid URL parameter value\n- 21: Missing body\n- 22: Invalid body\n- 23: Missing body field\n- 24: Invalid body field\n- 25: Missing header\n- 26: Invalid header value\n- 27: Missing query-string parameter\n- 28: Invalid query-string parameter value",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            
+            "description": "Not Found\n\nList of supported error codes:\n- 60: Resource not found",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "422": {
+            
+            "description": "Unprocessable entity\n\nFunctional error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            
+            "description": "Internal Server Error\n\nList of supported error codes:\n- 1: Internal error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+           "ServiceQualification"
+        ],
+        "operationId": "serviceQualificationDelete",
+        "summary": "Delete a service qualification",
+        "description": "This operation deletes a service qualification entity.\n\nSpecific business errors for current operation will be encapsulated in\n\nHTTP Response 422 Unprocessable entity\n",
+        "deprecated": false,
+        
+        "parameters": [
+          
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+
+          },
+          "400": {
+            
+            "description": "Bad Request\n\nList of supported error codes:\n- 20: Invalid URL parameter value\n- 21: Missing body\n- 22: Invalid body\n- 23: Missing body field\n- 24: Invalid body field\n- 25: Missing header\n- 26: Invalid header value\n- 27: Missing query-string parameter\n- 28: Invalid query-string parameter value",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            
+            "description": "Not Found\n\nList of supported error codes:\n- 60: Resource not found",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "422": {
+            
+            "description": "Unprocessable entity\n\nFunctional error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            
+            "description": "Internal Server Error\n\nList of supported error codes:\n- 1: Internal error",
+            "schema": {
+            
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+"definitions": {
+  
+
+    "ErrorDetail": {
+      "description": "",
+      
+      "required": [
+          
+            "code",
+            "message"
+      ],
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "",
+              "type": "integer",
+              "format": "int32"
+        },
+        "message": {
+          "description": "",
+              "type": "string"
+        },
+        "description": {
+          "description": "",
+              "type": "string"
+        },
+        "infoURL": {
+          "description": "",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "Error": {
+      "description": "",
+      
+      "required": [
+          
+            "code",
+            "message"
+      ],
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "",
+              "type": "integer",
+              "format": "int32"
+        },
+        "message": {
+          "description": "",
+              "type": "string"
+        },
+        "description": {
+          "description": "",
+              "type": "string"
+        },
+        "infoURL": {
+          "description": "",
+              "type": "string"
+        },
+        "details": {
+          "description": "",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/ErrorDetail"
+          }
+        }
+      }
+      
+    },
+
+    "ServiceQualification": {
+      "description": "ServiceQualification is used to perform a technical eligibility. It allows to retrieve a list of services that are technically available in the context of the interaction (place, party, service characteristics,…).",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the serviceQualification resource",
+              "type": "string"
+        },
+        "href": {
+          "description": "Hyperlink to access the serviceQualification",
+              "type": "string"
+        },
+        "serviceQualificationDate": {
+          "description": "Date when the serviceQualification has been submitted",
+              "type": "string",
+              "format": "date-time"
+        },
+        "description": {
+          "description": "Description of the serviceQualification",
+              "type": "string"
+        },
+        "state": {
+          "description": "State of the serviceQualification (acknowledged, inProgress, terminatedWithError, done)",
+              "type": "string"
+        },
+        "externalId": {
+          "description": "Identifier provided by the requester",
+              "type": "string"
+        },
+        "qualificationResult": {
+          "description": "Qualification result for this serviceQualification. It could be:  qualified (all qualification item are qualified), alternate (At least one item alternate and no item with  unqualified), unqualified (At least one item unqualified)",
+              "type": "string"
+        },
+        "expectedQualificationDate": {
+          "description": "Deadline date when the requester expected a qualification answer",
+              "type": "string",
+              "format": "date-time"
+        },
+        "estimatedResponseDate": {
+          "description": "Date when the requester expect to provide an answer for the qualification request",
+              "type": "string",
+              "format": "date-time"
+        },
+        "effectiveQualificationDate": {
+          "description": "Effective date to serviceQualification completion",
+              "type": "string",
+              "format": "date-time"
+        },
+        "expirationDate": {
+          "description": "Date when the qualification response expires",
+              "type": "string",
+              "format": "date-time"
+        },
+        "provideAlternative": {
+          "description": "An indicator which when the value is \"true\" means that alternative solutions should be provided",
+              "type": "boolean"
+        },
+        "provideUnavailabilityReason": {
+          "description": "An indicator which when the value is \"true\" means that unavailability reason are expected for non available service",
+              "type": "boolean"
+        },
+        "@baseType": {
+          "description": "Indicates the base type of the resource. Here can be serviceQualification",
+              "type": "string"
+        },
+        "@type": {
+          "description": "Indicates the type of resource. Here can be serviceQualification",
+              "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "Link to schema describing this REST resource",
+              "type": "string"
+        },
+        "relatedParty": {
+          "description": "A list of related party references. A related party defines party or party role linked to a specific entity.",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/RelatedPartyRef"
+          }
+        },
+        "serviceQualificationItem": {
+          "description": "A list of service qualification items",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/ServiceQualificationItem"
+          }
+        }
+      }
+      
+    },
+
+    "RelatedPartyRef": {
+      "description": "A related party defines party or party role linked to a specific entity",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of a related party",
+              "type": "string"
+        },
+        "href": {
+          "description": "Reference of the related party, could be a party reference or a party role reference",
+              "type": "string"
+        },
+        "role": {
+          "description": "Role of the related party",
+              "type": "string"
+        },
+        "name": {
+          "description": "Name of the related party",
+              "type": "string"
+        },
+        "@referredType": {
+          "description": "Indicates the base (class) type of the party",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "ServiceQualificationItem": {
+      "description": "",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id of the serviceQualification item",
+              "type": "string"
+        },
+        "state": {
+          "description": "State of the serviceQualification item (acknowledged, inProgress, terminatedWithError, done)",
+              "type": "string"
+        },
+        "expectedServiceAvailabilityDate": {
+          "description": "Date when the requester looks for service availability",
+              "type": "string",
+              "format": "date-time"
+        },
+        "expirationDate": {
+          "description": "Date when the qualification item response expires",
+              "type": "string",
+              "format": "date-time"
+        },
+        "qualificationResult": {
+          "description": "Qualification result for serviceQualification item. It could be:  qualified (request service are available), unqualified (requested not available and not alternate available), alternate (requested not available but proposal available)",
+              "type": "string"
+        },
+        "@type": {
+          "description": "Indicates the (class) type of the serviceQualificationItem",
+              "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "Link to schema describing this REST resource",
+              "type": "string"
+        },
+        "eligibilityUnavailabilityReason": {
+          "description": "A list of eligibility unavailability reasons. Reason for eligibility result if the serviceQualification result is no (meaning the service is not available).",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/EligibilityUnavailabilityReason"
+          }
+        },
+        "category": {
+          "description": "",
+              "$ref": "#/definitions/CategoryRef"
+        },
+        "qualificationItemRelationship": {
+          "description": "A list of qualification item relationships. Stucture used to describe relationship between serviceQualification item from the same serviceQualification.",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/QualificationItemRelationship"
+          }
+        },
+        "service": {
+          "description": "A service reference. Configure the service characteristics (only configurable characteristics and necessary only if a non default value is selected) and/or identify the service that needs to be modified/deleted",
+              "$ref": "#/definitions/Service"
+        },
+        "terminationError": {
+          "description": "A list of termination errors. If qualificationItem has not been done properly we indicate there the termination error(s)",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/TerminationError"
+          }
+        },
+        "alternateServiceProposal": {
+          "description": "A list of alternate product offering proposals. Alternate service specification proposal is used when the requested service is not available with characteristic and date asked for. An alternate proposal could be a distinct service Spec close to requested one or same as requested but with a different activation date",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/AlternateServiceProposal"
+          }
+        }
+      }
+      
+    },
+
+    "QualificationItemRelationship": {
+      "description": "Stucture used to describe relationship between serviceQualifcation item from the same serviceQualifcation",
+      
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Type of relationship (ex: reliesOn, connectedTo, etc...)",
+              "type": "string"
+        },
+        "id": {
+          "description": "Id of the serviceQualificationItem (from the same serviceQualifcation)",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "Service": {
+      "description": "Service reference. Configure the service characteristics & relationships (only configurable characteristics and necessary only if a non default value is selected) and/or identify the service that needs to be modified/deleted.",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the service",
+              "type": "string"
+        },
+        "href": {
+          "description": "Reference of the service",
+              "type": "string"
+        },
+        "name": {
+          "description": "Name of the service",
+              "type": "string"
+        },
+        "place": {
+          "description": "A list of places. Describe a place (using either geographicAddress or GeographicLocation) and/or identify an existing place (either an existing geographicAddress or existing GeographicLocation or existing GeographicSite) through its id",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/Place"
+          }
+        },
+        "serviceRelationship": {
+          "description": "A list of service relationships. Linked services to the one instantiate, it can be  for example \"reliesOn\" if the service needs another already owned service to rely on (e.g. an option on an already owned access service) or \"targets\" or \"isTargeted\" (depending on the way of expressing the link) for any other kind of links that may be useful",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/ServiceRelationship"
+          }
+        },
+        "characteristic": {
+          "description": "A list of characteristics of the service to instantiate or to modify",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/ServiceCharacteristic"
+          }
+        },
+        "relatedParty": {
+          "description": "A list of related party references. A related party defines party or party role linked to a specific entity",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/RelatedPartyRef"
+          }
+        },
+        "serviceSpecification": {
+          "description": "A service specification reference",
+              "$ref": "#/definitions/ServiceSpecificationRef"
+        }
+      }
+      
+    },
+
+    "TerminationError": {
+      "description": "If qualifcationItem has not been done properly we indicate there the termination error(s)",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the termination error",
+              "type": "string"
+        },
+        "value": {
+          "description": "Text to describe the termination error (Unable to proceed to qualification because incomplete information provided)",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "AlternateServiceProposal": {
+      "description": "Alternate service proposal is used when the requested service is not available with characteristic and date asked for. An alternate proposal could be a distinct serviceSpecification close to requested one or same as requested but with a different activation date",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Identifier of a alternate service proposal",
+              "type": "string"
+        },
+        "alternateServiceAvailabilityDate": {
+          "description": "Alternate availability date in case seller is not able to meet requested expected availability date for the service",
+              "type": "string",
+              "format": "date-time"
+        },
+        "@type": {
+          "description": "Indicates the (class) type of alternate service proposal",
+              "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "A link to the schema describing this REST resource",
+              "type": "string"
+        },
+        "alternateService": {
+          "description": "An alternate service",
+              "$ref": "#/definitions/AlternateService"
+        }
+      }
+      
+    },
+
+    "ServiceRelationship": {
+      "description": "Linked services to the one instantiate, it can be :\t\"reliesOn\" if the service needs another already owned service to rely on (e.g. an option on an already owned access service) or \"targets\" or \"isTargeted\" (depending on the way of expressing the link) for any other kind of links that may be useful",
+      
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Type of the service relationship",
+              "type": "string"
+        },
+        "service": {
+          "description": "Service reference or described targeted by the relationship",
+              "$ref": "#/definitions/Service"
+        }
+      }
+      
+    },
+
+    "ServiceCharacteristic": {
+      "description": "Characteristics of the service to instantiate or to modify",
+      
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the characteristic",
+              "type": "string"
+        },
+        "value": {
+          "description": "Value of the characteristic",
+              "type": "string"
+        },
+        "@type": {
+          "description": "Indicates the (class) type of resource",
+              "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "This field provided a link to the schema describing this REST resource",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "ServiceSpecificationRef": {
+      "description": "Service specification reference",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the service specification",
+              "type": "string"
+        },
+        "href": {
+          "description": "Reference of the service specification",
+              "type": "string"
+        },
+        "version": {
+          "description": "Version of the service specification",
+              "type": "string"
+        },
+        "name": {
+          "description": "Name of the service specification",
+              "type": "string"
+        },
+        "@referredType": {
+          "description": "Indicates the (class) type of resource (here service specification)",
+              "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "Link to schema describing this REST resource",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "Place": {
+      "description": "Describe a place (using either geographicAddress or GeographicLocation) and/or identify an existing place (either an existing geographicAddress or existing GeographicLocation or existing GeographicSite) through its id",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": ". Id of place - Must be a geographicAddress id or GeographicLocation id or GeographicSite id",
+              "type": "string"
+        },
+        "href": {
+          "description": "Reference of a place",
+              "type": "string"
+        },
+        "name": {
+          "description": "Name of a place",
+              "type": "string"
+        },
+        "role": {
+          "description": "Role of the place - could be' installation place' for example",
+              "type": "string"
+        },
+        "@type": {
+          "description": "Indicates the (class) type of place",
+              "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "A link to the schema describing this REST resource",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "EligibilityUnavailabilityReason": {
+      "description": "Reason for eligibility result if the serviceQualification result is no (meaning the service is not available)",
+      
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Unavailability reason code",
+              "type": "string"
+        },
+        "label": {
+          "description": "Unavailability reason label",
+              "type": "string"
+        },
+        "@type": {
+          "description": "Indicates the (class) type of the unavailability reason",
+              "type": "string"
+        },
+        "@schemaLocation": {
+          "description": "A link to the schema describing this REST resource",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "CategoryRef": {
+      "description": "Category reference. The category resource is used to group product offerings, service and resource candidates in logical containers. Categories can contain other categories and/or product offerings, resource or service candidates.",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the category",
+              "type": "string"
+        },
+        "href": {
+          "description": "Reference of the category",
+              "type": "string"
+        },
+        "version": {
+          "description": "Category version",
+              "type": "string"
+        },
+        "name": {
+          "description": "Name of the category",
+              "type": "string"
+        },
+        "@referredType": {
+          "description": "Indicates the (class) type of category",
+              "type": "string"
+        }
+      }
+      
+    },
+
+    "AlternateService": {
+      "description": "Alternate service close to requested one or same as requested but with a different activation date.",
+      
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the service",
+              "type": "string"
+        },
+        "href": {
+          "description": "Reference of the service",
+              "type": "string"
+        },
+        "name": {
+          "description": "Name of the service",
+              "type": "string"
+        },
+        "serviceSpecification": {
+          "description": "A service specification reference",
+              "$ref": "#/definitions/ServiceSpecificationRef"
+        },
+        "characteristic": {
+          "description": "A list of characteristics of the service to instantiate or to modify",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/ServiceCharacteristic"
+          }
+        },
+        "serviceRelationship": {
+          "description": "A list of service relationships. Linked services to the one instantiate, it can be  for example \"reliesOn\" if the service needs another already owned service to rely on (e.g. an option on an already owned access service) or \"targets\" or \"isTargeted\" (depending on the way of expressing the link) for any other kind of links that may be useful",
+          "type": "array",
+          "items": {
+              "$ref": "#/definitions/ServiceRelationship"
+          }
+        }
+      }
+      
+    }
+  }
+}
+	

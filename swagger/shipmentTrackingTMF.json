@@ -1,0 +1,601 @@
+{
+  "basePath": "/trackings/v1",
+  "definitions": {
+    "TrackingRequestType": {
+      "properties": {
+        "carrier": {
+          "type": "string",
+          "description": "Carrier that is performing the shipment"
+        },
+        "trackingCode": {
+          "type": "string",
+          "description": "Tracking code in the carrier network"
+        },
+        "carrierTrackingUrl": {
+          "type": "string",
+          "description": "URL to a public page provided by the carrier that shows tracking details for this tracker"
+        },
+        "trackingDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date when the shipment began to be tracked"
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the package"
+        },
+        "statusChangeDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date when the tracking status last changed"
+        },
+        "statusChangeReason": {
+          "type": "string",
+          "description": "Text describing the reason for the status of the tracking"
+        },
+        "weight": {
+          "type": "number",
+          "format": "decimal",
+          "description": "Weight of the package in grams"
+        },
+        "estimatedDeliveryDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Estimated deliveryDate"
+        },
+        "addressFrom": {
+          "$ref": "#/definitions/AddressType"
+        },
+        "addressTo": {
+          "$ref": "#/definitions/AddressType"
+        },
+        "checkpoint": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CheckpointType"
+          }
+        },
+        "order": {
+          "description": "Order that triggered this shipment",
+          "$ref": "#/definitions/OrderRefType"
+        }
+      },
+      "required": [
+        "status",
+        "carrier",
+        "addressTo",
+        "trackingDate"
+      ]
+    },
+    "TrackingDetailsType": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the shipment"
+        },
+        "href": {
+          "type": "string",
+          "description": "Reference to the shipment to be queried or to perform actions on it via API"
+        },
+        "carrier": {
+          "type": "string",
+          "description": "Carrier that is performing the shipment"
+        },
+        "trackingCode": {
+          "type": "string",
+          "description": "Tracking code in the carrier network"
+        },
+        "carrierTrackingUrl": {
+          "type": "string",
+          "description": "URL to a public page provided by the carrier that shows tracking details for this tracker"
+        },
+        "trackingDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date when the shipment began to be tracked"
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the package"
+        },
+        "statusChangeDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date when the tracking status last changed"
+        },
+        "statusChangeReason": {
+          "type": "string",
+          "description": "Text describing the reason for the status of the tracking"
+        },
+        "weight": {
+          "type": "number",
+          "format": "decimal",
+          "description": "Weight of the package in grams"
+        },
+        "estimatedDeliveryDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Estimated deliveryDate"
+        },
+        "addressFrom": {
+          "$ref": "#/definitions/AddressType"
+        },
+        "addressTo": {
+          "$ref": "#/definitions/AddressType"
+        },
+        "checkpoint": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CheckpointType"
+          }
+        },
+        "order": {
+          "description": "Order that triggered this shipment",
+          "$ref": "#/definitions/OrderRefType"
+        }
+      },
+      "required": [
+        "id",
+        "href",
+        "status",
+        "carrier",
+        "addressTo",
+        "trackingDate"
+      ]
+    },
+    "OrderRefType": {
+      "description": "Reference to an order that can typically be queried with another API.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the order"
+        },
+        "href": {
+          "type": "string",
+          "description": "URI where to query or perform actions on the order"
+        },
+        "name": {
+          "type": "string",
+          "description": "Screen name of the order"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the order"
+        }
+      },
+      "required": [
+        "id",
+        "href"
+      ]
+    },
+    "AddressType": {
+      "description": "Information describing a postal address",
+      "properties": {
+        "streetNr": {
+          "type": "string",
+          "description": "The street number"
+        },
+        "streetNrSuffix": {
+          "type": "string",
+          "description": "Suffix of the street number"
+        },
+        "streetNrLast": {
+          "type": "string",
+          "description": "Use it in case the address covers a range of numbers in a street. The range will be limited by streetNr and this field"
+        },
+        "streetNrLastSuffix": {
+          "type": "string",
+          "description": "Suffix of the last street number"
+        },
+        "streetName": {
+          "type": "string",
+          "description": "Name of the street (e.g.: Gran Vía)"
+        },
+        "streetType": {
+          "type": "string",
+          "description": "Type of street (e.g.: Street, Calle, Square, Avenue, Platz, etc.)"
+        },
+        "streetSuffix": {
+          "type": "string",
+          "description": "Suffix of the street"
+        },
+        "postcode": {
+          "type": "string",
+          "description": "Postal code"
+        },
+        "locality": {
+          "type": "string",
+          "description": "To define a second administrative area such as a district or borough"
+        },
+        "city": {
+          "type": "string",
+          "description": "Local administrative name such as a city, town, municipality or council, partido, concello, etc. that might comprise smaller entities"
+        },
+        "stateOrProvince": {
+          "type": "string",
+          "description": "Region, state, or province"
+        },
+        "country": {
+          "type": "string",
+          "description": "Country"
+        },
+        "geographicLocation": {
+          "$ref": "#/definitions/GeographicLocationType"
+        },
+        "subAddress": {
+          "$ref": "#/definitions/SubAddressType",
+          "description": "Latitude and longitude"
+        }
+      },
+      "required": [
+        "streetName",
+        "streetNr",
+        "streetType",
+        "postcode",
+        "locality",
+        "city",
+        "stateOrProvince",
+        "country"
+      ]
+    },
+    "GeographicLocationType": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of a GeoLocation"
+        },
+        "href": {
+          "type": "string",
+          "description": "href of the GeoLocation"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of a GeoLocation"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type allows describing Geolocation form: it could be a point, a line, a polygon, a cylinder, etc...."
+        },
+        "geographicPoint": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GeographicPointType"
+          },
+          "description": "A list of geo points (GeographicPoint [*]). A GeoPoint defines a geographic point through coordinates"
+        },
+        "@type": {
+          "type": "string",
+          "description": "Indicates the type of the resource for extensibility purposes"
+        },
+        "@schemaLocation": {
+          "type": "string",
+          "description": "A link to the schema describing this REST Resource"
+        }
+      },
+      "required": [
+        "type",
+        "geographicPoint"
+      ]
+    },
+    "GeographicPointType": {
+      "properties": {
+        "accuracy": {
+          "type": "string",
+          "description": "Accuracy of the coordinate specified"
+        },
+        "spatialRef": {
+          "type": "string",
+          "description": "Geocoding referential"
+        },
+        "x": {
+          "type": "string",
+          "description": "x coordinate (usually latitude)"
+        },
+        "y": {
+          "type": "string",
+          "description": "y coordinate (usually longitude)"
+        },
+        "z": {
+          "type": "string",
+          "description": "z coordinate (usually elevation)"
+        }
+      },
+      "required": [
+        "accuracy",
+        "spatialRef",
+        "x",
+        "y"
+      ]
+    },
+    "SubAddressType": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique Identifier of the subAddress"
+        },
+        "href": {
+          "type": "string",
+          "description": "href of the subAddress"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of subAddress. It can be a subunit or a private street"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the subAddress to identify it with a meaningful identification"
+        },
+        "subUnitType": {
+          "type": "string",
+          "description": "A string. the type of subunit e.g.BERTH, FLAT, PIER, SUITE, SHOP, TOWER, UNIT, WHARF."
+        },
+        "subUnitNumber": {
+          "type": "string",
+          "description": "the discriminator used for the subunit often just a simple number e.g. FLAT 5, may also be a range"
+        },
+        "levelType": {
+          "type": "string",
+          "description": "describes level types within a building"
+        },
+        "levelNumber": {
+          "type": "string",
+          "description": "used where a level type may be repeated e.g. BASEMENT 1, BASEMENT 2"
+        },
+        "buildingName": {
+          "type": "string",
+          "description": "allows for buildings that have well-known names"
+        },
+        "privateStreetName": {
+          "type": "string",
+          "description": "private streets internal to a property (e.g. a university) may have internal names that are not recorded by the land title office"
+        },
+        "privateStreetNumber": {
+          "type": "string",
+          "description": "private streets numbers internal to a private street"
+        },
+        "@type": {
+          "type": "string",
+          "description": "Indicates the type of the resource for extensibility purposes"
+        },
+        "@schemaLocation": {
+          "type": "string",
+          "description": "A link to the schema describing this REST Resource"
+        }
+      }
+    },
+    "CheckpointType": {
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Status of the package at the time of the scan event"
+        },
+        "message": {
+          "type": "string",
+          "description": "Message describing the performed action e.g.: attempted delivery, departed from warehouse..."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "checkPost": {
+          "type": "string",
+          "description": "Location display name"
+        },
+        "city": {
+          "type": "string",
+          "description": "Local administrative name such as a city, town, municipality or council, partido, concello, etc. that might comprise smaller entities"
+        },
+        "stateOrProvince": {
+          "type": "string",
+          "description": "Region, state, or province"
+        },
+        "country": {
+          "type": "string",
+          "description": "Country"
+        }
+      }
+    }
+  },
+  "host": "tmforum.org",
+  "info": {
+    "description": "This is a sample representation of the Shipment Tracking UNICA API using Swagger. You can find out more about UNICA APIs contacting Global IT.",
+    "title": "Shipment Tracking Management",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/tracking": {
+      "get": {
+        "operationId": "retrieveTrackings",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "description": "Id of the order whose shipment has to be fetched",
+            "in": "query",
+            "name": "order.id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tracking details retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/TrackingDetailsType"
+            }
+          }
+        },
+        "summary": "Retrieve tracking details of a shipment",
+        "tags": [
+          "trackings"
+        ]
+      },
+      "post": {
+        "operationId": "createTracking",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "description": "Necessary information to create a shipment tracking entity",
+            "in": "body",
+            "name": "shipmentTrackingRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TrackingRequestType"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Tracking created successfully",
+            "schema": {
+              "$ref": "#/definitions/TrackingDetailsType"
+            }
+          }
+        },
+        "summary": "Create tracking details of a shipment",
+        "tags": [
+          "trackings"
+        ]
+      }
+    },
+    "/tracking/{trackingId}": {
+      "get": {
+        "operationId": "retrieveTracking",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "description": "Id of the shipment that needs to be fetched",
+            "in": "path",
+            "name": "trackingId",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tracking details retrieved successfully",
+            "schema": {
+              "$ref": "#/definitions/TrackingDetailsType"
+            }
+          }
+        },
+        "summary": "Retrieve tracking details of a shipment",
+        "tags": [
+          "trackings"
+        ]
+      },
+      "patch": {
+        "operationId": "modifyTracking",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "description": "Id of the shipment that needs to be modified",
+            "in": "path",
+            "name": "trackingId",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Modifications to be done",
+            "in": "body",
+            "name": "trackingModificationRequest",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Tracking modified successfully",
+            "schema": {
+              "$ref": "#/definitions/TrackingDetailsType"
+            }
+          }
+        },
+        "summary": "Modify tracking details of a shipment",
+        "tags": [
+          "trackings"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteTracking",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "description": "Id of the shipment that must be deleted",
+            "in": "path",
+            "name": "trackingId",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Tracking details deleted successfully"
+          }
+        },
+        "summary": "Delete tracking details of a shipment",
+        "tags": [
+          "trackings"
+        ]
+      }
+    },
+    "/tracking/{trackingId}/checkpoint": {
+      "post": {
+        "operationId": "createTrackingCheckpoint",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "description": "Id of the tracking the checkpoint where be added onto",
+            "in": "path",
+            "name": "trackingId",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "Necessary data to add a new checkpoint",
+            "in": "body",
+            "name": "checkpointRequest",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckpointType"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Checkpoint added successfully",
+            "schema": {
+              "$ref": "#/definitions/TrackingDetailsType"
+            }
+          }
+        },
+        "summary": "Add checkpoint to a shipment tracking",
+        "tags": [
+          "trackings"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "name": "trackings"
+    }
+  ]
+}
