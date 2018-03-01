@@ -86,14 +86,14 @@ def loadSwagger(filename):
                 log.critical("File [" + filename + "] is not readable")
                 exit()
         else:
-            log.critcal("File [" + filename + "] does not exist")
+            log.critical("File [" + filename + "] does not exist")
             exit()
 
         try:
             with open(filename, 'r') as fp:
                 obj = json.load(fp)
         except ValueError:
-            log.critical("Error loading and parsing file [" + filename+"]")
+            log.critical("Error loading and parsing file [" + filename+ "]")
             exit()
 
     return obj
@@ -101,7 +101,7 @@ def loadSwagger(filename):
 
 args = parseCommandLine()
 log = setupLogging(args.debug, args.log)
-# args.fileName seems to be a (possible) list of names
+# args.fileName is a (possible) list of names
 
 obj_list = []
 for x in args.fileName:
@@ -117,25 +117,25 @@ for x in args.fileName:
         summary["Title"] = "PASS"
     else:
         log.error("info node has no title")
-        summary["Title"] = "WARN"
+        summary["Title"] = "FAIL: No Title"
     if (info["description"]):
         log.info("Found info.description: " + info["description"])
         summary["Description"] = "PASS"
     else:
         log.error("info node has no description")
-        summary["Description"] = "WARN"
+        summary["Description"] = "FAIL: No Description"
 
     if (info["version"]):
         if (info["version"] == "2.0"):
             log.warn(
                 "info.version is 2.0 - is this the Swagger file format version or the API specification version?")
-            summary["API Version"] = "WARN"
+            summary["API Version"] = "WARN: APIv2.0?"
         else:
             log.info("Found info.version: " + info["version"])
             summary["API Version"] = "PASS"
     else:
         log.info("info node has no version")
-        summary["API Version"] = "WARN"
+        summary["API Version"] = "WARN: No Version"
 
     # "host": "biologeek.orange-labs.fr",
     if (obj["host"]):
@@ -151,11 +151,11 @@ for x in args.fileName:
             # Perhaps validate that the resource name comes next?
         else:
             log.error("basePath [" + basePath +
-                      "] does not start with [/tmf-api]")
-            summary["BasePath"] = "FAIL"
+                      "] does not start with [/tmf-api/]")
+            summary["BasePath"] = "FAIL: No /tmf-api/"
 
         if (basePath.find("/v2") != -1):
-            log.error("basePath [" + basePath +
+            log.info("basePath [" + basePath +
                       "] contains an explicit version number")
     paths = obj["paths"]
     for path in paths:
@@ -164,7 +164,12 @@ for x in args.fileName:
             log.info("Can use a [" + operation + "] on path [" + path + "]")
             uri = "http://" + hostname + basePath + path
             operationDetails = method[operation]
-            params = operationDetails["parameters"]
+            if "parameters" in operationDetails:
+                params = operationDetails["parameters"]
+            else:
+                log.info("Operation [" +operation+ "] on uri [" +uri+ "] has no parameters defined")
+                params = {}
+
             if args.ctk == 1:
                 for param in params:
                     if "required" in param:
