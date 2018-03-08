@@ -92,8 +92,9 @@ def loadSwagger(filename):
         try:
             with open(filename, 'r') as fp:
                 obj = json.load(fp)
-        except ValueError:
+        except ValueError as e:
             log.critical("Error loading and parsing file [" + filename+ "]")
+            log.critical(e)
             obj = 0
 
     return obj
