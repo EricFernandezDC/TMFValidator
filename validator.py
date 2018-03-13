@@ -48,6 +48,7 @@ def setupLogging(debug, log):
     else:
         # Just leave the errors on (doesn't seem to be a .WARN)
         log.setLevel(logging.INFO)
+
     # Create console handler with a higher log level
     ch = logging.StreamHandler()
     #ch.setLevel(logging.ERROR)
@@ -105,15 +106,15 @@ log = setupLogging(args.debug, args.log)
 # args.fileName is a (possible) list of names
 
 obj_list = []
-for x in args.fileName:
+for fileName in args.fileName:
     summary = collections.OrderedDict()
-    obj = loadSwagger(x)
+    obj = loadSwagger(fileName)
     if obj==0:
-        summary["File Name"] = x
+        summary["File Name"] = fileName
         summary["ERROR"] = "File cannot be parsed, is it a valid JSON file?"
         obj_list.append(summary)
     else:
-        summary = {"File Name": x}
+        summary = {"File Name": fileName}
         log.debug("Using Swagger file format " + obj["swagger"])
         info = obj["info"]
         log.debug("Found info node " + json.dumps(info))
@@ -142,7 +143,7 @@ for x in args.fileName:
                 log.info("info.version [" +versionValue+ "] matches the format \'major.minor(.patch)\'")
                 if (versionValue == "2.0"):
                     log.warn(
-                        "info.version is 2.0 - is this the Swagger file format version or the API specification version?")
+                        "info.version is 2.0 - is this the Swagger file format version or the API specification version for [" +fileName+ "]?")
                     summary["API Version"] = "WARN: APIv2.0?"
                 else:
                     log.info("Found correctly formatted info.version: " + versionValue)
@@ -203,26 +204,73 @@ for x in args.fileName:
                 if "responses" in operationDetails:
                     log.info("Responses found for operation [" +operation+ "] on [" +path+ "]")
                     if (operation == "get"):
+                        # Assume an initial PASS, to be over-written later by any FAIL
+                        if ("DG3-1-Pg26: GET Responses" not in summary):
+                            summary["DG3-1-Pg26: GET Responses"] = "PASS"
+
                         if ("200" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg26: A 200 response code was listed for the HTTP-GET of [" +path+ "]")
+                            log.info("DG3-1-Pg26: A 200 response code was correctly listed for the HTTP-GET of [" +path+ "]")
                         else:
                             log.error("DG3-1-Pg26: A 200 response code was not listed for the HTTP-GET of [" +path+ "]")
-                            # Probably need to just set a flag inside this loop, to be picked up at the end
-                            summary["DG3-1-Pg26: Responses"] = "FAIL: GET missing 200 response"
+                            summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 200 response"
+
+                        if ("500" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg26: A 500 response code was correctly listed for the HTTP-GET of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg26: A 500 response code was not listed for the HTTP-GET of [" +path+ "]")
+                            summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 500 response"
 
                         # DG3-1-Pg26: “If there are no matching resource then a 404 Not Found must be returned.”
-                        if ("404" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg26: A 404 response code was listed for the HTTP-GET of [" +path+ "]")
+                        # If the path ends with a specific resource identifier (like ".../party/{roleId}") then do a 404 response check
+                        specificResource = re.compile(".*{.*}$")
+                        if (specificResource.match(path)):
+                            if ("404" in operationDetails["responses"]):
+                                log.info("DG3-1-Pg26: A 404 response code was correctly listed for the HTTP-GET of [" +path+ "]")
+                            else:
+                                log.error("DG3-1-Pg26: A 404 response code was not listed for the HTTP-GET of [" +path+ "]")
+                                summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 404"
                         else:
-                            log.error("DG3-1-Pg26: A 404 response code was not listed for the HTTP-GET of [" +path+ "]")
-                            # Probably need to just set a flag inside this loop, to be picked up at the end
-                            summary["DG3-1-Pg26: Responses"] = "FAIL: GET missing 404 response"
+                            log.info("Skipping 404 response check for [" +path+ "] - Assumed to be a collection")
+
+                    if (operation == "post"):
+                        if ("POST Responses" not in summary):
+                            summary["POST Responses"] = "PASS"
+
+                        if ("201" in operationDetails["responses"]):
+                            log.info("A 201 response code was correctly listed for the HTTP-POST of [" +path+ "]")
+                        else:
+                            log.error("A 201 response code was not listed for the HTTP-POST of [" +path+ "]")
+                            summary["POST Responses"] = "FAIL: Missing 201 response"
+
+                        # DG3-1-Pg26: “If there are no matching resource then a 404 Not Found must be returned.”
+                        # If the path ends with a specific resource identifier (like ".../party/{roleId}") then do a 404 response check
+                        specificResource = re.compile(".*{.*}$")
+                        if (specificResource.match(path)):
+                            if ("404" in operationDetails["responses"]):
+                                log.info("DG3-1-Pg26: A 404 response code was listed for the HTTP-POST of [" +path+ "]")
+                            else:
+                                log.error("DG3-1-Pg26: A 404 response code was not listed for the HTTP-POST of [" +path+ "]")
+                                summary["DG3-1-Pg26: POST Responses"] = "FAIL: Missing 404 response"
+                        else:
+                            log.info("Skipping 404 response check for [" +path+ "] - Assumed to be a collection")
+
+                    if (operation == "delete"):
+                        if ("202" in operationDetails["responses"] or "204" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg69: A 202 (Accepted) or 204 (No Content) response code was correctly listed for the HTTP-DELETE of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg69: Neither a 202 (Accepted) or 204 (No Content) response code was listed for the HTTP-DELETE of [" +path+ "]")
+                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 202/204 response"
+
+                        if ("404" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg69: A 404 (Not Found) response code was correctly listed for the HTTP-DELETE of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg69: A 404 (Not Found) response code was not listed for the HTTP-DELETE of [" +path+ "]")
+                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 404 response"
 
                     for response in operationDetails["responses"]:
                         log.info("Found response code [" +response+ "]")
                 else:
                     log.error("DG3-1-Pg26: No responses attribute found for operation [" +operation+ "] for path [" +path+ "]")
-                    # Probably need to just set a flag inside this loop, to be picked up at the end
                     summary["DG3-1-Pg26: Responses"] = "FAIL: Missing responses"
 
                 if args.ctk == 1:

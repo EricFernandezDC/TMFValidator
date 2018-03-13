@@ -4,7 +4,7 @@ rem NOT A VALID FILE: changeManagement-v2-swagger2.json, productOfferingQualific
 rem NOT A VALID FILE: prepayBalanceManagement-v3-swagger2.json, promotionManagement-v3-swagger2.json, Service_Ordering_Management.regular.swagger.json, serviceCatalogManagement-v2-swagger2.json
 
 
-python validator.py -s -l -d ^
+py validator.py -s -l -d ^
  swagger\accountManagement-v3-swagger2.json^
  swagger\addressManagement-v2-swagger2.json^
  swagger\agreementManagement-v2-swagger2.json^
