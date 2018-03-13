@@ -3,6 +3,7 @@ import json
 import os
 import urllib.request
 import argparse
+import re               # Regular Expressions
 
 def parseCommandLine():
     # Parse command line 
@@ -96,6 +97,11 @@ else:
     log.error("info node has no description")
 
 if (info["version"]):
+    versionFormat = re.compile("\d+\.\d+(.\d+)*")
+    # Check it is a valid number - no pre/post-fix text
+    if (versionFormat.match(info["version"]) == None):
+        log.error("info.version [" +info["version"]+ "] value does not match [major.minor(.patch)] format")
+
     if (info["version"] == "2.0"):
         log.warn("info.version is 2.0 - is this the Swagger file format version or the API specification version?")
     else:
