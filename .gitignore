@@ -1,3 +1,6 @@
 validator.log
 test.py
+summary.log
 .vscode/settings.json
+logs/*
+!logs/.gitkeep

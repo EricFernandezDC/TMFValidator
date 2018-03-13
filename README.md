@@ -11,3 +11,5 @@ Checks include (but not limited to):
 * (more to follow)
 
 The tool can also be useful in generating tests for each resource within the API. This can be used to generate appropriate Postman scripts.
+
+Use the online tool http://www.convertcsv.com/json-to-csv.htm to convert the output summary files (JSON) to Excel (xls) or CSV formats.
