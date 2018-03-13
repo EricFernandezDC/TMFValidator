@@ -5,9 +5,12 @@ Validator for JSON-based Open-API specifications from the TM Forum [http://www.t
 This Python script parses a named Swagger 2.0 JSON API specification and checks that if conforms to the norms expected of a TM Forum Open-API specification.
 
 Checks include (but not limited to):
-* The info node has a "title", "description" and "version" attributes
+* The info node has a "title", "description" and "version" attributes and are not empty
+* The info.version fits the number format of 'major.minor(.patch)' with no pre/post-fix text
 * That the "basePath" starts with "/tmf-api/"
-* That the "basePath" does NOT contain an explicit version number
+* That any path with a GET, offers responses of (at least) 200, 500 and 404 (for specific resources) 
+* That any path with a POST, offers responses of (at least) 201 and 500
+* That any path with a DELETE, offers responses of either 202 (Accepted) or 204 (No Cotent), and 500
 * (more to follow)
 
 The tool can also be useful in generating tests for each resource within the API. This can be used to generate appropriate Postman scripts.
