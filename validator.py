@@ -79,7 +79,7 @@ def loadSwagger(filename):
         obj = json.loads(req.read().decode())
     else:
         # From a file
-        log.info("API Specification is " + filename)
+        log.info("******************************************************\nAPI Specification is " + filename)
         if (os.path.exists(filename)):
             if (os.access(filename, os.R_OK)):
                 log.debug("File [" + filename + "] exists and is readable")
@@ -123,31 +123,42 @@ for fileName in args.fileName:
             log.info("Found info.title: " + info["title"])
             summary["Title"] = "PASS"
         else:
-            log.error("info node has no title")
+            log.error("General: info node has no title")
             summary["Title"] = "FAIL: No Title"
 
         if (info["description"] and len(info["description"]) > 0):
             log.info("Found info.description: " + info["description"])
             summary["Description"] = "PASS"
         else:
-            log.error("info node has no description")
+            log.error("General: info node has no description")
             summary["Description"] = "FAIL: No Description"
 
         if (info["version"]):
             versionValue = info["version"]
-            versionFormat = re.compile("\d+.\d+(.\d+)*")
-            if (versionFormat.match(versionValue) == None):
-                log.error("info.version [" +versionValue+ "] does not match the format \'major.minor(.patch)\'")
+            # Look for 'major.minor(.patch)' with no pre/post-fix text 
+            versionFormat = re.search("^(\d+).\d+(.\d+)*$", versionValue)
+            if (versionFormat == None):
+                log.error("General: info.version [" +versionValue+ "] does not match the format \'major.minor(.patch)\'")
                 summary["API Version"] = "FAIL: Bad Format"
             else:
                 log.info("info.version [" +versionValue+ "] matches the format \'major.minor(.patch)\'")
-                if (versionValue == "2.0"):
-                    log.warn(
-                        "info.version is 2.0 - is this the Swagger file format version or the API specification version for [" +fileName+ "]?")
-                    summary["API Version"] = "WARN: APIv2.0?"
+                # This should be the major version of the API, taken from the info.version string
+                apiMajorVersion = versionFormat.group(1)
+                # What is the API major version, taken from the fileName
+                fileVersion = re.search(".*-v(\d)-.*", fileName, re.IGNORECASE)
+                if (fileVersion):
+                    fileMajorVersion = fileVersion.group(1)
+                    log.info("Filename [" +fileName+ "] major version is [" +fileMajorVersion+ "]. info.version says it is [" +apiMajorVersion+ "]")
+                    if (fileMajorVersion == apiMajorVersion):
+                        log.info("Major versions from the filename [" +fileMajorVersion+ "] and info.version [" +apiMajorVersion+ "] are the same!")
+                        summary["API Version"] = "PASS"
+                    else:
+                        log.error("Major versions from the filename [" +fileMajorVersion+ "] and info.version [" +apiMajorVersion+ "] are not the same!")
+                        summary["API Version"] = "FAIL: [" +fileMajorVersion+ "-vs-" +apiMajorVersion+ "]"
+                        
                 else:
-                    log.info("Found correctly formatted info.version: " + versionValue)
-                    summary["API Version"] = "PASS"
+                    log.error("Filename: Cannot extract a major API version number from the filename [" +fileName+ "]")
+                    summary["API Version"] = "FAIL: Filename Format"
         else:
             log.info("info node has no version")
             summary["API Version"] = "WARN: No Version"
@@ -155,7 +166,7 @@ for fileName in args.fileName:
         # "host": "biologeek.orange-labs.fr",
         if (obj["host"]):
             hostname = obj["host"]
-            log.info("Found host [" + hostname + "] What should this be set to?")
+            log.info("Found host [" + hostname + "] (What should this be set to?)")
 
         # "basePath": "/tmf-api/resourceInventoryManagement",
         if (obj["basePath"]):
@@ -165,19 +176,14 @@ for fileName in args.fileName:
                 summary["BasePath"] = "PASS"
                 # Perhaps validate that the resource name comes next?
             else:
-                log.error("basePath [" + basePath +
-                        "] does not start with [/tmf-api/]")
+                log.error("General: basePath [" + basePath + "] does not start with [/tmf-api/]")
                 summary["BasePath"] = "FAIL: No /tmf-api/"
-
-            if (basePath.find("/v2") != -1):
-                log.info("basePath [" + basePath +
-                        "] contains an explicit version number")
 
             # DG-P1-Pg18: “REST APIs MUST support the “application/json” media type by default.”
             if ("consumes" in obj and "produces" in obj):
-                log.info("Found [consumes] and [produces] attributes")
-                if ("application/json" in obj["consumes"] and
-                    "application/json" in obj["produces"]):
+                log.info("Found [consumes [" +str(obj["consumes"])+ "]] and [produces [" +str(obj["produces"])+ "]] attributes")
+                if (str(obj["consumes"]).index("application/json") and
+                    str(obj["produces"]).index("application/json")):
                     log.info("DG3-1-18: Found [consumes] and [produces] attributes supporting 'application/json'")
                     summary["DG3-1-18: JSON"] = "PASS"
                 else:
@@ -211,13 +217,13 @@ for fileName in args.fileName:
                         if ("200" in operationDetails["responses"]):
                             log.info("DG3-1-Pg26: A 200 response code was correctly listed for the HTTP-GET of [" +path+ "]")
                         else:
-                            log.error("DG3-1-Pg26: A 200 response code was not listed for the HTTP-GET of [" +path+ "]")
+                            log.error("DG3-1-Pg26: A 200 response code was not listed for the [" +operation+ "] of [" +path+ "]")
                             summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 200 response"
 
                         if ("500" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg26: A 500 response code was correctly listed for the HTTP-GET of [" +path+ "]")
+                            log.info("DG3-1-Pg26: A 500 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
-                            log.error("DG3-1-Pg26: A 500 response code was not listed for the HTTP-GET of [" +path+ "]")
+                            log.error("DG3-1-Pg26: A 500 response code was not listed for the [" +operation+ "] of [" +path+ "]")
                             summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 500 response"
 
                         # DG3-1-Pg26: “If there are no matching resource then a 404 Not Found must be returned.”
@@ -225,21 +231,21 @@ for fileName in args.fileName:
                         specificResource = re.compile(".*{.*}$")
                         if (specificResource.match(path)):
                             if ("404" in operationDetails["responses"]):
-                                log.info("DG3-1-Pg26: A 404 response code was correctly listed for the HTTP-GET of [" +path+ "]")
+                                log.info("DG3-1-Pg26: A 404 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                             else:
-                                log.error("DG3-1-Pg26: A 404 response code was not listed for the HTTP-GET of [" +path+ "]")
+                                log.error("DG3-1-Pg26: A 404 response code was not listed for the [" +operation+ "] of [" +path+ "]")
                                 summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 404"
                         else:
-                            log.info("Skipping 404 response check for [" +path+ "] - Assumed to be a collection")
+                            log.info("Skipping 404 response check [" +operation+ "] on [" +path+ "] - Assumed to be a collection")
 
                     if (operation == "post"):
                         if ("POST Responses" not in summary):
                             summary["POST Responses"] = "PASS"
 
                         if ("201" in operationDetails["responses"]):
-                            log.info("A 201 response code was correctly listed for the HTTP-POST of [" +path+ "]")
+                            log.info("DG3-1-Pg26:A 201 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
-                            log.error("A 201 response code was not listed for the HTTP-POST of [" +path+ "]")
+                            log.error("DG3-1-Pg26:A 201 response code was not listed for the [" +operation+ "] of [" +path+ "]")
                             summary["POST Responses"] = "FAIL: Missing 201 response"
 
                         # DG3-1-Pg26: “If there are no matching resource then a 404 Not Found must be returned.”
@@ -247,28 +253,28 @@ for fileName in args.fileName:
                         specificResource = re.compile(".*{.*}$")
                         if (specificResource.match(path)):
                             if ("404" in operationDetails["responses"]):
-                                log.info("DG3-1-Pg26: A 404 response code was listed for the HTTP-POST of [" +path+ "]")
+                                log.info("DG3-1-Pg26: A 404 response code was listed for the [" +operation+ "] of [" +path+ "]")
                             else:
-                                log.error("DG3-1-Pg26: A 404 response code was not listed for the HTTP-POST of [" +path+ "]")
+                                log.error("DG3-1-Pg26: A 404 response code was not listed for the [" +operation+ "] of [" +path+ "]")
                                 summary["DG3-1-Pg26: POST Responses"] = "FAIL: Missing 404 response"
                         else:
-                            log.info("Skipping 404 response check for [" +path+ "] - Assumed to be a collection")
+                            log.info("Skipping 404 response check [" +operation+ "] on [" +path+ "] - Assumed to be a collection")
 
                     if (operation == "delete"):
                         if ("202" in operationDetails["responses"] or "204" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg69: A 202 (Accepted) or 204 (No Content) response code was correctly listed for the HTTP-DELETE of [" +path+ "]")
+                            log.info("DG3-1-Pg69: A 202 (Accepted) or 204 (No Content) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
-                            log.error("DG3-1-Pg69: Neither a 202 (Accepted) or 204 (No Content) response code was listed for the HTTP-DELETE of [" +path+ "]")
+                            log.error("DG3-1-Pg69: Neither a 202 (Accepted) or 204 (No Content) response code was listed for the [" +operation+ "] of [" +path+ "]")
                             summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 202/204 response"
 
                         if ("404" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg69: A 404 (Not Found) response code was correctly listed for the HTTP-DELETE of [" +path+ "]")
+                            log.info("DG3-1-Pg69: A 404 (Not Found) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
-                            log.error("DG3-1-Pg69: A 404 (Not Found) response code was not listed for the HTTP-DELETE of [" +path+ "]")
+                            log.error("DG3-1-Pg69: A 404 (Not Found) response code was not listed for the [" +operation+ "] of [" +path+ "]")
                             summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 404 response"
 
                     for response in operationDetails["responses"]:
-                        log.info("Found response code [" +response+ "]")
+                        log.info("Found [" +operation+ "] response code [" +response+ "]")
                 else:
                     log.error("DG3-1-Pg26: No responses attribute found for operation [" +operation+ "] for path [" +path+ "]")
                     summary["DG3-1-Pg26: Responses"] = "FAIL: Missing responses"
