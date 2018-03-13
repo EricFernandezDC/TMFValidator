@@ -5,6 +5,7 @@ import urllib.request
 import argparse
 import time
 import collections
+import re               # Regular Expression
 
 
 def parseCommandLine():
@@ -79,7 +80,6 @@ def loadSwagger(filename):
         # From a file
         log.info("API Specification is " + filename)
         if (os.path.exists(filename)):
-            #log.debug("File [" +filename+ "] exists")
             if (os.access(filename, os.R_OK)):
                 log.debug("File [" + filename + "] exists and is readable")
             else:
@@ -110,7 +110,7 @@ for x in args.fileName:
     obj = loadSwagger(x)
     if obj==0:
         summary["File Name"] = x
-        summary["ERROR"] = "File cannot be read, is it a valid JSON file?"
+        summary["ERROR"] = "File cannot be parsed, is it a valid JSON file?"
         obj_list.append(summary)
     else:
         summary = {"File Name": x}
@@ -118,13 +118,14 @@ for x in args.fileName:
         info = obj["info"]
         log.debug("Found info node " + json.dumps(info))
 
-        if (info["title"]):
+        if (info["title"] and len(info["title"]) > 0):
             log.info("Found info.title: " + info["title"])
             summary["Title"] = "PASS"
         else:
             log.error("info node has no title")
             summary["Title"] = "FAIL: No Title"
-        if (info["description"]):
+
+        if (info["description"] and len(info["description"]) > 0):
             log.info("Found info.description: " + info["description"])
             summary["Description"] = "PASS"
         else:
@@ -132,13 +133,20 @@ for x in args.fileName:
             summary["Description"] = "FAIL: No Description"
 
         if (info["version"]):
-            if (info["version"] == "2.0"):
-                log.warn(
-                    "info.version is 2.0 - is this the Swagger file format version or the API specification version?")
-                summary["API Version"] = "WARN: APIv2.0?"
+            versionValue = info["version"]
+            versionFormat = re.compile("\d+.\d+(.\d+)*")
+            if (versionFormat.match(versionValue) == None):
+                log.error("info.version [" +versionValue+ "] does not match the format \'major.minor(.patch)\'")
+                summary["API Version"] = "FAIL: Bad Format"
             else:
-                log.info("Found info.version: " + info["version"])
-                summary["API Version"] = "PASS"
+                log.info("info.version [" +versionValue+ "] matches the format \'major.minor(.patch)\'")
+                if (versionValue == "2.0"):
+                    log.warn(
+                        "info.version is 2.0 - is this the Swagger file format version or the API specification version?")
+                    summary["API Version"] = "WARN: APIv2.0?"
+                else:
+                    log.info("Found correctly formatted info.version: " + versionValue)
+                    summary["API Version"] = "PASS"
         else:
             log.info("info node has no version")
             summary["API Version"] = "WARN: No Version"
