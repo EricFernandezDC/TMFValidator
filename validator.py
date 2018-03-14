@@ -133,6 +133,18 @@ for fileName in args.fileName:
             log.error("General: info node has no description")
             summary["Description"] = "FAIL: No Description"
 
+        # "basePath": "/tmf-api/resourceInventoryManagement",
+        basePath = ""
+        if (obj["basePath"]):
+            basePath = obj["basePath"]
+            if (basePath.startswith("/tmf-api/")):
+                log.info("basePath correctly starts with [/tmf-api/]")
+                summary["BasePath"] = "PASS"
+                # Perhaps validate that the resource name comes next?
+            else:
+                log.error("General: basePath [" + basePath + "] does not start with [/tmf-api/]")
+                summary["BasePath"] = "FAIL: No /tmf-api/"
+
         if (info["version"]):
             versionValue = info["version"]
             # Look for 'major.minor(.patch)' with no pre/post-fix text 
@@ -144,21 +156,22 @@ for fileName in args.fileName:
                 log.info("info.version [" +versionValue+ "] matches the format \'major.minor(.patch)\'")
                 # This should be the major version of the API, taken from the info.version string
                 apiMajorVersion = versionFormat.group(1)
-                # What is the API major version, taken from the fileName
-                fileVersion = re.search(".*-v(\d)-.*", fileName, re.IGNORECASE)
-                if (fileVersion):
-                    fileMajorVersion = fileVersion.group(1)
-                    log.info("Filename [" +fileName+ "] major version is [" +fileMajorVersion+ "]. info.version says it is [" +apiMajorVersion+ "]")
-                    if (fileMajorVersion == apiMajorVersion):
-                        log.info("Major versions from the filename [" +fileMajorVersion+ "] and info.version [" +apiMajorVersion+ "] are the same!")
-                        summary["API Version"] = "PASS"
-                    else:
-                        log.error("Major versions from the filename [" +fileMajorVersion+ "] and info.version [" +apiMajorVersion+ "] are not the same!")
-                        summary["API Version"] = "FAIL: [" +fileMajorVersion+ "-vs-" +apiMajorVersion+ "]"
-                        
+                # What is the API major version, taken from the basePath attribute
+                basePathVersion = re.search(".*/v(\d)(/)?", basePath, re.IGNORECASE)
+                if (basePathVersion):
+                    basePathMajorVersion = basePathVersion.group(1)
+                    log.info("basePath: Taking major API version number from the basePath [" +basePath+ "] as [" +basePathMajorVersion+ "]")
                 else:
-                    log.error("Filename: Cannot extract a major API version number from the filename [" +fileName+ "]")
-                    summary["API Version"] = "FAIL: Filename Format"
+                    log.info("basePath: Cannot extract a major API version number from the basePath [" +basePath+ "] - assume \'v1\'")
+                    basePathMajorVersion = "1"
+
+                log.info("basePath [" +basePath+ "] major version is [" +basePathMajorVersion+ "]. info.version says it is [" +apiMajorVersion+ "]")
+                if (basePathMajorVersion == apiMajorVersion):
+                    log.info("Major versions from the basePath [" +basePathMajorVersion+ "] and info.version [" +apiMajorVersion+ "] are the same!")
+                    summary["API Version"] = "PASS"
+                else:
+                    log.error("Major versions from the basePath [" +basePathMajorVersion+ "] and info.version [" +apiMajorVersion+ "] are not the same!")
+                    summary["API Version"] = "FAIL: [" +basePathMajorVersion+ "-vs-" +apiMajorVersion+ "]"
         else:
             log.info("info node has no version")
             summary["API Version"] = "WARN: No Version"
@@ -168,30 +181,19 @@ for fileName in args.fileName:
             hostname = obj["host"]
             log.info("Found host [" + hostname + "] (What should this be set to?)")
 
-        # "basePath": "/tmf-api/resourceInventoryManagement",
-        if (obj["basePath"]):
-            basePath = obj["basePath"]
-            if (basePath.startswith("/tmf-api/")):
-                log.info("basePath correctly starts with [/tmf-api/]")
-                summary["BasePath"] = "PASS"
-                # Perhaps validate that the resource name comes next?
+        # DG-P1-Pg18: “REST APIs MUST support the “application/json” media type by default.”
+        if ("consumes" in obj and "produces" in obj):
+            log.info("Found [consumes [" +str(obj["consumes"])+ "]] and [produces [" +str(obj["produces"])+ "]] attributes")
+            if (str(obj["consumes"]).index("application/json") and
+                str(obj["produces"]).index("application/json")):
+                log.info("DG3-1-18: Found [consumes] and [produces] attributes supporting 'application/json'")
+                summary["DG3-1-18: JSON"] = "PASS"
             else:
-                log.error("General: basePath [" + basePath + "] does not start with [/tmf-api/]")
-                summary["BasePath"] = "FAIL: No /tmf-api/"
-
-            # DG-P1-Pg18: “REST APIs MUST support the “application/json” media type by default.”
-            if ("consumes" in obj and "produces" in obj):
-                log.info("Found [consumes [" +str(obj["consumes"])+ "]] and [produces [" +str(obj["produces"])+ "]] attributes")
-                if (str(obj["consumes"]).index("application/json") and
-                    str(obj["produces"]).index("application/json")):
-                    log.info("DG3-1-18: Found [consumes] and [produces] attributes supporting 'application/json'")
-                    summary["DG3-1-18: JSON"] = "PASS"
-                else:
-                    log.error("DG3-1-18: [consumes] and [produces] attributes do not mention 'application/json'")
-                    summary["DG3-1-18: JSON"] = "FAIL: No JSON support"
-            else:
-                log.error("DG3-1-18: The [consumes] and/or [produces] attributes (to support 'application/json') are missing")
-                summary["DG3-1-18: JSON"] = "FAIL: Missing attributes"
+                log.error("DG3-1-18: [consumes] and [produces] attributes do not mention 'application/json'")
+                summary["DG3-1-18: JSON"] = "FAIL: No JSON support"
+        else:
+            log.error("DG3-1-18: The [consumes] and/or [produces] attributes (to support 'application/json') are missing")
+            summary["DG3-1-18: JSON"] = "FAIL: Missing attributes"
 
         paths = obj["paths"]
         for path in paths:
