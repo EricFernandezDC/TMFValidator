@@ -7,7 +7,6 @@ This Python script parses a named Swagger 2.0 JSON API specification and checks 
 Checks scoped for R18.0 APIs include (but not limited to):
 * The info node has 'title', 'description' and 'version' attributes and are not empty
 * The info.version fits the number format of 'major.minor(.patch)' with no pre/post-fix text
-<<<<<<< HEAD
 * The 'basePath' starts with '/tmf-api/'
 * If the 'basePath' has a major version in the URI, it must match the major version from 'info.version'
 * Any path with a GET, offers responses of (at least) 200, 500 and 404 (for specific resources) 
