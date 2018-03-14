@@ -19,13 +19,6 @@ Checks being considered for R18.5 APIs may include:
 * EntityRef: The EntityRef MUST include 'id' and 'href' attributes, other attributes MAY include: name, @type, @schemaLocation, validFor, role
 * Home Document: 
 * Linking: 
-=======
-* The major version from 'info.version' must match any major version stated in the basePath ('v1' assumed if none mentioned in basePath) 
-* That the "basePath" starts with "/tmf-api/"
-* That any path with a GET, offers responses of (at least) 200, 500 and 404 (for specific resources) 
-* That any path with a POST, offers responses of (at least) 201 and 500
-* That any path with a DELETE, offers responses of either 202 (Accepted) or 204 (No Cotent), and 500
->>>>>>> e0eb18ff4675a3591701b0c08c538e2183a3db17
 * (more to follow)
 
 
