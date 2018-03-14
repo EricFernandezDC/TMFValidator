@@ -133,7 +133,6 @@ for fileName in args.fileName:
             log.error("General: info node has no description")
             summary["Description"] = "FAIL: No Description"
 
-        # "basePath": "/tmf-api/resourceInventoryManagement",
         basePath = ""
         if (obj["basePath"]):
             basePath = obj["basePath"]
@@ -179,7 +178,12 @@ for fileName in args.fileName:
         # "host": "biologeek.orange-labs.fr",
         if (obj["host"]):
             hostname = obj["host"]
-            log.info("Found host [" + hostname + "] (What should this be set to?)")
+            if (hostname != "serverRoot"):
+                log.warn("host [" +hostname+ "] SHOULD be set to \'serverRoot\'")
+                summary["host"] = "WARN: [" +hostname+ "] not \'serverRoot\'"
+            else:
+                log.info("Found host [" + hostname + "] correctly set to \'serverRoot\'")
+                summary["host"] = "PASS"
 
         # DG-P1-Pg18: “REST APIs MUST support the “application/json” media type by default.”
         if ("consumes" in obj and "produces" in obj):
@@ -211,11 +215,12 @@ for fileName in args.fileName:
                 # DG3-1-Pg26: “If the request is successful then the returned code must be 200.”
                 if "responses" in operationDetails:
                     log.info("Responses found for operation [" +operation+ "] on [" +path+ "]")
-                    if (operation == "get"):
-                        # Assume an initial PASS, to be over-written later by any FAIL
-                        if ("DG3-1-Pg26: GET Responses" not in summary):
-                            summary["DG3-1-Pg26: GET Responses"] = "PASS"
+                    # Assume an initial PASS, to be over-written later by any FAIL
+                    if ("DG3-1-Pg26: GET Responses" not in summary):
+                        summary["DG3-1-Pg26: GET Responses"] = "PASS"
 
+                    if (operation == "get"):
+                        # Any GET must offer responses of (at least) 200, 500 and 404
                         if ("200" in operationDetails["responses"]):
                             log.info("DG3-1-Pg26: A 200 response code was correctly listed for the HTTP-GET of [" +path+ "]")
                         else:
@@ -241,6 +246,7 @@ for fileName in args.fileName:
                             log.info("Skipping 404 response check [" +operation+ "] on [" +path+ "] - Assumed to be a collection")
 
                     if (operation == "post"):
+                        # Any POST must offer responses of (at least) 201 and 500
                         if ("POST Responses" not in summary):
                             summary["POST Responses"] = "PASS"
 
@@ -250,19 +256,14 @@ for fileName in args.fileName:
                             log.error("DG3-1-Pg26:A 201 response code was not listed for the [" +operation+ "] of [" +path+ "]")
                             summary["POST Responses"] = "FAIL: Missing 201 response"
 
-                        # DG3-1-Pg26: “If there are no matching resource then a 404 Not Found must be returned.”
-                        # If the path ends with a specific resource identifier (like ".../party/{roleId}") then do a 404 response check
-                        specificResource = re.compile(".*{.*}$")
-                        if (specificResource.match(path)):
-                            if ("404" in operationDetails["responses"]):
-                                log.info("DG3-1-Pg26: A 404 response code was listed for the [" +operation+ "] of [" +path+ "]")
-                            else:
-                                log.error("DG3-1-Pg26: A 404 response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                                summary["DG3-1-Pg26: POST Responses"] = "FAIL: Missing 404 response"
+                        if ("500" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg26:A 500 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
-                            log.info("Skipping 404 response check [" +operation+ "] on [" +path+ "] - Assumed to be a collection")
+                            log.error("DG3-1-Pg26:A 500 response code was not listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["POST Responses"] = "FAIL: Missing 500 response"
 
                     if (operation == "delete"):
+                         # Any delete must offer (at least) 202 (Accepted, if async) or 204 (No Content) and 404, 500
                         if ("202" in operationDetails["responses"] or "204" in operationDetails["responses"]):
                             log.info("DG3-1-Pg69: A 202 (Accepted) or 204 (No Content) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
@@ -274,6 +275,39 @@ for fileName in args.fileName:
                         else:
                             log.error("DG3-1-Pg69: A 404 (Not Found) response code was not listed for the [" +operation+ "] of [" +path+ "]")
                             summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 404 response"
+
+                        if ("500" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg69: A 500 (Server Error) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg69: A 500 (Server Error) response code was not listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 500 response"
+
+                        # A DELETE should not have a 201 (Created) response!
+                        if ("201" in operationDetails["responses"]):
+                            log.error("DG3-1-Pg69: A 201 (Created) response code was listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE has 201 (Created) response"
+                        else:
+                            log.info("DG3-1-Pg69: A 201 (Created) response code was correctly NOT listed for the [" +operation+ "] of [" +path+ "]")
+
+                    if (operation == "patch"):
+                         # Any patch must offer (at least) 202 (Accepted, if async) or 204 (No Content) and 404, 500
+                        if ("202" in operationDetails["responses"] or "204" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg69: A 202 (Accepted) or 204 (No Content) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg69: Neither a 202 (Accepted) or 204 (No Content) response code was listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 202/204 response"
+
+                        if ("404" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg69: A 404 (Not Found) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg69: A 404 (Not Found) response code was not listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 404 response"
+
+                        if ("500" in operationDetails["responses"]):
+                            log.info("DG3-1-Pg69: A 500 (Server Error) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
+                        else:
+                            log.error("DG3-1-Pg69: A 500 (Server Error) response code was not listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 500 response"
 
                     for response in operationDetails["responses"]:
                         log.info("Found [" +operation+ "] response code [" +response+ "]")
