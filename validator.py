@@ -100,6 +100,36 @@ def loadSwagger(filename):
 
     return obj
 
+def checkResponseCodes(path, method, responses, must = {}, should = {}, mustNot = {}):
+    log.info("Method [" +method+ "] on path [" +path+ "] must have codes [" +str(must)+ "], should have codes [" +str(should)+ "] and must not have codes [" +str(mustNot)+ "]")
+    log.info("Responses [" +str(responses)+ "]")
+
+    summary = "PASS"
+    # Check for the MUST HAVE response codes
+    for mustCode in must:
+        if (str(mustCode) not in responses):
+            log.error("The [" +method+ "] on [" +path+ "] MUST HAVE a response of [" +str(mustCode)+ "]")
+            summary = "FAIL: "+method+ " missing " +str(mustCode)
+        else:
+            log.info("The [" +method+ "] on [" +path+ "] correctly included a MUST HAVE response of [" +str(mustCode)+ "]")
+
+    # Check for the SHOULD HAVE response codes
+    for shouldCode in should:
+        if (str(shouldCode) not in responses):
+            log.warn("The [" +method+ "] on [" +path+ "] SHOULD HAVE a response of [" +str(shouldCode)+ "]")
+            summary = "WARN: "+method+ " missing " +str(shouldCode)
+        else:
+            log.info("The [" +method+ "] on [" +path+ "] correctly included a SHOULD HAVE response of [" +str(shouldCode)+ "]")
+
+    # Check for the MUST NOT HAVE response codes
+    for badCode in mustNot:
+        if (str(badCode) in responses):
+            log.error("The [" +method+ "] on [" +path+ "] MUST NOT have a response of [" +str(badCode)+ "]")
+            summary = "FAIL: "+method+ " had " +str(shouldCode)
+        else:
+            log.info("The [" +method+ "] on [" +path+ "] correctly did NOT have a response of [" +str(badCode)+ "]")
+
+    return summary
 
 args = parseCommandLine()
 log = setupLogging(args.debug, args.log)
@@ -175,7 +205,7 @@ for fileName in args.fileName:
             log.info("info node has no version")
             summary["API Version"] = "WARN: No Version"
 
-        # "host": "biologeek.orange-labs.fr",
+        # Many have  { "host": "biologeek.orange-labs.fr" }
         if (obj["host"]):
             hostname = obj["host"]
             if (hostname != "serverRoot"):
@@ -200,10 +230,16 @@ for fileName in args.fileName:
             summary["DG3-1-18: JSON"] = "FAIL: Missing attributes"
 
         paths = obj["paths"]
+        # Every API should have a '/hub' resource for event management
+        if ("/hub" in paths):
+            summary["Event Hub"] = "PASS"
+        else:
+            log.error("No '/hub' resource listed")
+            summary["Event Hub"] = "FAIL: No hub resource"
+
         for path in paths:
             method = paths[path]
             for operation in method.keys():
-                log.info("Can use a [" + operation + "] on path [" + path + "]")
                 uri = "http://" + hostname + basePath + path
                 operationDetails = method[operation]
                 if "parameters" in operationDetails:
@@ -212,7 +248,6 @@ for fileName in args.fileName:
                     log.info("Operation [" +operation+ "] on uri [" +uri+ "] has no parameters defined")
                     params = {}
 
-                # DG3-1-Pg26: “If the request is successful then the returned code must be 200.”
                 if "responses" in operationDetails:
                     log.info("Responses found for operation [" +operation+ "] on [" +path+ "]")
                     # Assume an initial PASS, to be over-written later by any FAIL
@@ -221,96 +256,50 @@ for fileName in args.fileName:
 
                     if (operation == "get"):
                         # Any GET must offer responses of (at least) 200, 500 and 404
-                        if ("200" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg26: A 200 response code was correctly listed for the HTTP-GET of [" +path+ "]")
-                        else:
-                            log.error("DG3-1-Pg26: A 200 response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 200 response"
-
-                        if ("500" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg26: A 500 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
-                        else:
-                            log.error("DG3-1-Pg26: A 500 response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 500 response"
+                        summary["GET Responses"] = checkResponseCodes(path, operation, operationDetails["responses"], { 200, 400, 500 }, { 403 }, { 201, 202 })
 
                         # DG3-1-Pg26: “If there are no matching resource then a 404 Not Found must be returned.”
                         # If the path ends with a specific resource identifier (like ".../party/{roleId}") then do a 404 response check
                         specificResource = re.compile(".*{.*}$")
                         if (specificResource.match(path)):
                             if ("404" in operationDetails["responses"]):
-                                log.info("DG3-1-Pg26: A 404 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
+                                log.info("A 404 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                             else:
-                                log.error("DG3-1-Pg26: A 404 response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                                summary["DG3-1-Pg26: GET Responses"] = "FAIL: Missing 404"
+                                log.error("A 404 response code was not listed for the [" +operation+ "] of [" +path+ "]")
+                                summary["GET Responses"] = "FAIL: Missing 404"
                         else:
                             log.info("Skipping 404 response check [" +operation+ "] on [" +path+ "] - Assumed to be a collection")
 
                     if (operation == "post"):
-                        # Any POST must offer responses of (at least) 201 and 500
-                        if ("POST Responses" not in summary):
-                            summary["POST Responses"] = "PASS"
-
-                        if ("201" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg26:A 201 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
-                        else:
-                            log.error("DG3-1-Pg26:A 201 response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["POST Responses"] = "FAIL: Missing 201 response"
-
-                        if ("500" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg26:A 500 response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
-                        else:
-                            log.error("DG3-1-Pg26:A 500 response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["POST Responses"] = "FAIL: Missing 500 response"
+                        summary["POST Responses"] = checkResponseCodes(path, operation, operationDetails["responses"], { 201, 400, 500 }, { 403 }, { 200 })
 
                     if (operation == "delete"):
+                        summary["DELETE Responses"] = checkResponseCodes(path, operation, operationDetails["responses"], { 400, 404, 500 }, { 403 }, { 200, 201 })
                          # Any delete must offer (at least) 202 (Accepted, if async) or 204 (No Content) and 404, 500
                         if ("202" in operationDetails["responses"] or "204" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg69: A 202 (Accepted) or 204 (No Content) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
+                            log.info("A 202 (Accepted) or 204 (No Content) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
-                            log.error("DG3-1-Pg69: Neither a 202 (Accepted) or 204 (No Content) response code was listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 202/204 response"
-
-                        if ("404" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg69: A 404 (Not Found) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
-                        else:
-                            log.error("DG3-1-Pg69: A 404 (Not Found) response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 404 response"
-
-                        if ("500" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg69: A 500 (Server Error) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
-                        else:
-                            log.error("DG3-1-Pg69: A 500 (Server Error) response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 500 response"
-
-                        # A DELETE should not have a 201 (Created) response!
-                        if ("201" in operationDetails["responses"]):
-                            log.error("DG3-1-Pg69: A 201 (Created) response code was listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE has 201 (Created) response"
-                        else:
-                            log.info("DG3-1-Pg69: A 201 (Created) response code was correctly NOT listed for the [" +operation+ "] of [" +path+ "]")
+                            log.error("Neither a 202 (Accepted) or 204 (No Content) response code was listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["DELETE Responses"] = "FAIL: Missing 202/204 response"
 
                     if (operation == "patch"):
                          # Any patch must offer (at least) 202 (Accepted, if async) or 204 (No Content) and 404, 500
+                        summary["PATCH Responses"] = checkResponseCodes(path, operation, operationDetails["responses"], { 400, 404, 500 }, { 403 }, { 200 })
                         if ("202" in operationDetails["responses"] or "204" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg69: A 202 (Accepted) or 204 (No Content) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
+                            log.info("A 202 (Accepted) or 204 (No Content) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
-                            log.error("DG3-1-Pg69: Neither a 202 (Accepted) or 204 (No Content) response code was listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 202/204 response"
+                            log.error("Neither a 202 (Accepted) or 204 (No Content) response code was listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["PATCH Responses"] = "FAIL: Missing 202/204 response"
 
-                        if ("404" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg69: A 404 (Not Found) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
+                    if (operation == "put"):
+                         # DG-3.0 Section-1 Page-46: Any put must offer (at least) 200 (Ok), 202 (Accepted, if async) or 204 (No Content) and 404, 500
+                        summary["PUT Responses"] = checkResponseCodes(path, operation, operationDetails["responses"], { 200, 400, 404, 500 }, { 403 }, {})
+
+                        if ("202" in operationDetails["responses"] or "204" in operationDetails["responses"]):
+                            log.info("A 202 (Accepted) or 204 (No Content) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
-                            log.error("DG3-1-Pg69: A 404 (Not Found) response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 404 response"
-
-                        if ("500" in operationDetails["responses"]):
-                            log.info("DG3-1-Pg69: A 500 (Server Error) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
-                        else:
-                            log.error("DG3-1-Pg69: A 500 (Server Error) response code was not listed for the [" +operation+ "] of [" +path+ "]")
-                            summary["DG3-1-Pg69: Responses"] = "FAIL: DELETE missing 500 response"
-
-                    for response in operationDetails["responses"]:
-                        log.info("Found [" +operation+ "] response code [" +response+ "]")
+                            log.error("Neither a 202 (Accepted) or 204 (No Content) response code was listed for the [" +operation+ "] of [" +path+ "]")
+                            summary["PUT Responses"] = "FAIL: DELETE missing 202/204 response"
                 else:
                     log.error("DG3-1-Pg26: No responses attribute found for operation [" +operation+ "] for path [" +path+ "]")
                     summary["DG3-1-Pg26: Responses"] = "FAIL: Missing responses"
