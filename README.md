@@ -14,9 +14,10 @@ Checks scoped for R18.0 APIs include (but not limited to):
 * Any path with a POST, offers responses of (at least) 201 (Created) and 500
 * Any path with a DELETE, offers responses of either 202 (Accepted, if async) or 204 (No Content), and 500, and NOT a 201 (Created)
 * Any path with a PATCH, offers responses of 200 (Success), 202 (Accepted, if async) or 204 (No Content), 404 and 500
-* Every API has a '/hub' resource? (not yet implemented)
+* Every API has a '/hub' resource
 
 Checks being considered for R18.5 APIs may include:
+* Consistent Error body representation of user and application specific error codes (when used), as per GD-3.0 Part-1, Page-20
 * EntityRef: The EntityRef MUST include 'id' and 'href' attributes, other attributes MAY include: name, @type, @schemaLocation, validFor, role
 * Home Document: 
 * Linking: 
