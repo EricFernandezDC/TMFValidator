@@ -2,7 +2,7 @@
 
 Validator for JSON-based Open-API specifications from the TM Forum [http://www.tmforum.org/open-apis]
 
-This Python script parses a named Swagger 2.0 JSON API specification and checks that if conforms to the norms expected of a TM Forum Open-API specification.
+This Python script parses a named Swagger 2.0 JSON API specification and checks that it conforms to the norms expected of a TM Forum Open-API specification.
 
 Checks scoped for R18.0 APIs include (but not limited to):
 * The info node has 'title', 'description' and 'version' attributes and are not empty
