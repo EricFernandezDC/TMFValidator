@@ -28,8 +28,10 @@ Checks being considered for R18.5 APIs may include:
 * EntityRef: The EntityRef MUST include 'id' and 'href' attributes, other attributes MAY include: name, @type, @schemaLocation, validFor, role
 * Home Document: 
 * Linking: 
-* (more to follow)
-
+* Consistency to support automated code-generation, such as:
+* * 'info.version' needs three degrees: major.minor.patch
+* * Using dot.notation breaks the generator, such as (in params): { "name": "validFor.endDateTime", "format": "date-time", ... }
+* * Swagger can be case-insensitive in some contexts, but the generator is case-sensitive
 
 The tool can also be useful in generating tests for each resource within the API. This can be used to generate appropriate Postman scripts.
 
