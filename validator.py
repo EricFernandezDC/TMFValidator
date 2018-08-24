@@ -102,24 +102,49 @@ def loadSwagger(filename):
 
 def checkResponseCodes(path, method, responses, must = {}, should = {}, mustNot = {}):
     log.info("Method [" +method+ "] on path [" +path+ "] must have codes [" +str(must)+ "], should have codes [" +str(should)+ "] and must not have codes [" +str(mustNot)+ "]")
-    log.info("Responses [" +str(responses)+ "]")
+    #log.info("Responses [" +str(responses)+ "]")
 
     summary = "PASS"
     # Check for the MUST HAVE response codes
     for mustCode in must:
-        if (str(mustCode) not in responses):
-            log.error("The [" +method+ "] on [" +path+ "] MUST HAVE a response of [" +str(mustCode)+ "]")
-            summary = "FAIL: "+method+ " missing " +str(mustCode)
+        mustCodeStr = str(mustCode)
+        if (mustCodeStr not in responses):
+            log.error("The [" +method+ "] on [" +path+ "] MUST HAVE a response of [" +mustCodeStr+ "]")
+            summary = "FAIL: "+method+ " missing " +mustCodeStr
         else:
-            log.info("The [" +method+ "] on [" +path+ "] correctly included a MUST HAVE response of [" +str(mustCode)+ "]")
+            log.info("The [" +method+ "] on [" +path+ "] correctly included a MUST HAVE response of [" +mustCodeStr+ "]")
+            log.info("responses[" +mustCodeStr+ "] = {" +str(responses[mustCodeStr])+ "}")
+            if ("description" in responses[mustCodeStr]):
+                log.info("responses[" +mustCodeStr+ "] correctly has a \'description\' attribute")
+            else:
+                log.error("responses[" +mustCodeStr+ "] does not have a \'description\' attribute")
+
+            if ("schema" in responses[mustCodeStr]):
+                # Presuming that if you have a schema attribute - it is pointing ($ref) to an Error entity
+                log.info("responses[" +mustCodeStr+ "] correctly has a \'schema\' attribute")
+            else:
+                log.error("responses[" +mustCodeStr+ "] does not have a \'schema\' attribute")
 
     # Check for the SHOULD HAVE response codes
     for shouldCode in should:
-        if (str(shouldCode) not in responses):
-            log.warn("The [" +method+ "] on [" +path+ "] SHOULD HAVE a response of [" +str(shouldCode)+ "]")
-            summary = "WARN: "+method+ " missing " +str(shouldCode)
+        shouldCodeStr = str(shouldCode)
+        if (shouldCodeStr not in responses):
+            log.warn("The [" +method+ "] on [" +path+ "] SHOULD HAVE a response of [" +shouldCodeStr+ "]")
+            summary = "WARN: "+method+ " missing " +shouldCodeStr
         else:
-            log.info("The [" +method+ "] on [" +path+ "] correctly included a SHOULD HAVE response of [" +str(shouldCode)+ "]")
+            log.info("The [" +method+ "] on [" +path+ "] correctly included a SHOULD HAVE response of [" +shouldCodeStr+ "]")
+
+            if ("description" in responses[shouldCodeStr]):
+                log.info("responses[" +shouldCodeStr+ "] correctly has a \'description\' attribute")
+            else:
+                log.error("responses[" +shouldCodeStr+ "] does not have a \'description\' attribute")
+
+            if ("schema" in responses[shouldCodeStr]):
+                # Presuming that if you have a schema attribute - it is pointing ($ref) to an Error entity
+                log.info("responses[" +shouldCodeStr+ "] correctly has a \'schema\' attribute")
+            else:
+                log.error("responses[" +shouldCodeStr+ "] does not have a \'schema\' attribute")
+
 
     # Check for the MUST NOT HAVE response codes
     for badCode in mustNot:
