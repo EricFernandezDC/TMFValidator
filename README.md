@@ -21,12 +21,13 @@ Checks scoped for R18.0 APIs include (but not limited to):
 | PUT    | (200 or 202 or 204), 400, 404, 405, 409, 500 | 401, 403 |          | Part 1: Page 46          |
 | DELETE | (200 or 202 or 204), 400, 404, 405, 500      | 401, 403 |    201   | Part 1: Page 69          |
 
-Checks being considered for R18.5 APIs may include:
-* A successful GET (response-code 200) for a specific resource {id} must return a single instance (not an array)
+Checks added for R18.5 APIs include:
+* A successful GET (response-code 200) for a specific resource {id} must return a single instance (not a type:array)
+* Each error response should be described and consistent, such as:
+* * '404' : { '*description*' : 'Party Not Found', '*schema*' : {'$ref': '#/definitions/Error'} }
+
 * Any 'operationId' attribute value must follow typical programming naming conventions (unique, no spaces)
 * Consistent Error body representation of user and application specific error codes (when used), as per GD-3.0 Part-1, Page-20
-* Each error response should be described and consistent, such as:
-* * '404' : { 'description' : 'Party Not Found', 'schema' : {'$ref': '#/definitions/Error'} }
 * EntityRef: The EntityRef MUST include 'id' and 'href' attributes, other attributes MAY include: name, @type, @schemaLocation, validFor, role
 
 Other additions being considered in the future:
