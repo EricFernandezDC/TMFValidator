@@ -73,13 +73,13 @@ def setupLogging(debug, log):
 
 def loadSwagger(filename):
     obj = {}
+    log.info("******************************************************\nAPI Specification is " + filename)
     # From a URL
     if "http" in filename:
         req = urllib.request.urlopen(filename)
         obj = json.loads(req.read().decode())
     else:
         # From a file
-        log.info("******************************************************\nAPI Specification is " + filename)
         if (os.path.exists(filename)):
             if (os.access(filename, os.R_OK)):
                 log.debug("File [" + filename + "] exists and is readable")
@@ -293,10 +293,19 @@ for fileName in args.fileName:
                             else:
                                 log.error("A 404 response code was not listed for the [" +operation+ "] of [" +path+ "]")
                                 summary["GET Responses"] = "FAIL: Missing 404"
+
+                            # TODO: Check that a successful (200) GET {id} returns a single instance, not an array
+                            if ("200" in operationDetails["responses"]):
+                                log.info("A 200 response code was listed for the [" +operation+ "] of [" +path+ "] - Need to check that this returns a single instance - not an array")
+                                returnObj = operationDetails["responses"]["200"]
+                                if ("schema" in returnObj and ("type" in returnObj["schema"])):
+                                    log.error("A 200 response code for the [" +operation+ "] of [" +path+ "] returns an array: " +str(returnObj["schema"]))
+                                else:
+                                    log.info("A 200 response code for the [" +operation+ "] of [" +path+ "] correctly returns a single instance " +str(returnObj))
                         else:
                             log.info("Skipping 404 response check [" +operation+ "] on [" +path+ "] - Assumed to be a collection")
 
-                         # Any get must offer (at least) 200 (Ok) or 206 (Partial response)
+                        # Any get must offer (at least) 200 (Ok) or 206 (Partial response)
                         if ("200" in operationDetails["responses"] or "206" in operationDetails["responses"]):
                             log.info("A 200 (Ok) or 206 (Partial) response code was correctly listed for the [" +operation+ "] of [" +path+ "]")
                         else:
