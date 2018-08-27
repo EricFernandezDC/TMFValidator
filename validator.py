@@ -269,6 +269,14 @@ for fileName in args.fileName:
             for operation in method.keys():
                 uri = "http://" + hostname + basePath + path
                 operationDetails = method[operation]
+
+                if "operationId" in operationDetails:
+                    opId = operationDetails["operationId"]
+                    if (opId.find(" ") != -1):
+                        log.error("operationId [" +opId+ "] has spaces, on operation [" +operation+ "] on uri [" +uri+ "]")
+                else:
+                    log.warn("Operation [" +operation+ "] on uri [" +uri+ "] has no \'operationId\' attribute")
+
                 if "parameters" in operationDetails:
                     params = operationDetails["parameters"]
                 else:
