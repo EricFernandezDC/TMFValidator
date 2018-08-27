@@ -25,7 +25,6 @@ Checks added for R18.5 APIs include:
 * A successful GET (response-code 200) for a specific resource {id} must return a single instance (not a type:array)
 * Each error response should be described and consistent, such as:
 * * '404' : { '*description*' : 'Party Not Found', '*schema*' : {'$ref': '#/definitions/Error'} }
-
 * Any 'operationId' attribute value must follow typical programming naming conventions (unique, no spaces)
 * Consistent Error body representation of user and application specific error codes (when used), as per GD-3.0 Part-1, Page-20
 * EntityRef: The EntityRef MUST include 'id' and 'href' attributes, other attributes MAY include: name, @type, @schemaLocation, validFor, role
