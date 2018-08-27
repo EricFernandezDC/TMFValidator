@@ -36,12 +36,15 @@ def parseCommandLine():
     #print(args.fileName, args.debug)
     return args
 
+
 # Set logging output file, stream, format and level
-
-
-def setupLogging(debug, log):
+def setupLogging(debug, log, fileName):
     # Set up logger
-    log = logging.getLogger("API Validator")
+    lastSegment = fileName.split("/")                   # Take the last part of any HTTP reference (eg: https://www.github.com/raw/.../TMF_640_ServiceOrder.admin.swagger.json)
+    swaggerName = lastSegment[len(lastSegment)-1]
+    firstSwaggerSegment = swaggerName.split(".")[0]     # Take the FIRST part of the filename TMF_640_ServiceOrder (stripping out .admin.swagger.json etc)
+    log = logging.getLogger(firstSwaggerSegment)        # Use this filename as the log context
+
     if (debug == 1):
         # Turn on all debug output
         log.setLevel(logging.DEBUG)
@@ -53,7 +56,6 @@ def setupLogging(debug, log):
     ch = logging.StreamHandler()
     #ch.setLevel(logging.ERROR)
     ch.setLevel(logging.INFO)
-    #formatter = logging.Formatter('%(asctime)s: %(name)s: %(levelname)s: %(message)s')
     formatter = logging.Formatter('%(name)s: %(levelname)s: %(message)s')
     ch.setFormatter(formatter)
     # add the handlers to the logger
@@ -102,7 +104,6 @@ def loadSwagger(filename):
 
 def checkResponseCodes(path, method, responses, must = {}, should = {}, mustNot = {}):
     log.info("Method [" +method+ "] on path [" +path+ "] must have codes [" +str(must)+ "], should have codes [" +str(should)+ "] and must not have codes [" +str(mustNot)+ "]")
-    #log.info("Responses [" +str(responses)+ "]")
 
     summary = "PASS"
     # Check for the MUST HAVE response codes
@@ -158,11 +159,11 @@ def checkResponseCodes(path, method, responses, must = {}, should = {}, mustNot 
     return summary
 
 args = parseCommandLine()
-log = setupLogging(args.debug, args.log)
 # args.fileName is a (possible) list of names
 
 obj_list = []
 for fileName in args.fileName:
+    log = setupLogging(args.debug, args.log, fileName)
     summary = collections.OrderedDict()
     obj = loadSwagger(fileName)
     if obj==0:
